@@ -1,8 +1,21 @@
+buildscript {
+    ext.koin_version = "2.2.3"
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "io.insert-koin:koin-gradle-plugin:$koin_version"
+    }
+}
+
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
 }
 
-group 'ua.com.radiokot'
+apply plugin: 'koin'
+
+group 'ua.com.radiokot.feed'
 version '1.0'
 
 repositories {
@@ -17,6 +30,9 @@ dependencies {
 
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
+
+    implementation "io.insert-koin:koin-core:$koin_version"
+    testImplementation "io.insert-koin:koin-test:$koin_version"
 }
 
 compileKotlin {
