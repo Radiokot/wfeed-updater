@@ -1,4 +1,4 @@
-package ua.com.radiokot.feed.updater.tumblr.util.json
+package ua.com.radiokot.feed.updater.util.json
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext

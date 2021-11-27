@@ -2,7 +2,7 @@ package ua.com.radiokot.feed.updater.tumblr.dashboard.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import ua.com.radiokot.feed.updater.tumblr.util.json.UnixTimestampDateDeserializer
+import ua.com.radiokot.feed.updater.util.json.UnixTimestampDateDeserializer
 import java.util.*
 
 data class TumblrPost(
