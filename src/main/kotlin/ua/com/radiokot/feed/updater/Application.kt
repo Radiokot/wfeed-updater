@@ -4,6 +4,7 @@ import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
+import ua.com.radiokot.feed.updater.posts.model.FeedPostToSave
 import ua.com.radiokot.feed.updater.di.injectionModules
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
@@ -32,6 +33,9 @@ object Application : KoinComponent {
             )
             .forEach {
                 println(it)
+                it.posts.forEach { post ->
+                    println(FeedPostToSave(post))
+                }
             }
     }
 }
