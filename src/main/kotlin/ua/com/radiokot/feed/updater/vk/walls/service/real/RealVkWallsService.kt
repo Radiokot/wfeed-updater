@@ -18,23 +18,24 @@ class RealVkWallsService(
         groupIds: Collection<String>,
         wallPostsLimit: Int
     ): List<VkWall> {
-        require(groupIds.size <= 24) {
-            "The request can't load more than 24 groups"
+        require(groupIds.size <= MAX_GROUPS) {
+            "The request can't load more than $MAX_GROUPS groups"
         }
 
-        require(wallPostsLimit <= 100) {
-            "The request can't load more than 100 posts for each wall"
+        require(wallPostsLimit <= MAX_POSTS) {
+            "The request can't load more than $MAX_POSTS posts for each wall"
         }
 
         val request = Request.Builder()
             .get()
             .url(
                 "https://api.vk.com/method/execute.getGroupsWalls".toHttpUrl().newBuilder()
+                    .addNotNullQueryParameter("v", VK_API_VERSION)
                     .addNotNullQueryParameter("pcount", wallPostsLimit)
                     .addNotNullQueryParameter("scount", groupIds.size)
                     .apply {
                         groupIds.forEachIndexed { i, groupId ->
-                            addNotNullQueryParameter("s_${i+1}", groupId)
+                            addNotNullQueryParameter("s${i + 1}", groupId)
                         }
                     }
                     .build()
@@ -49,5 +50,11 @@ class RealVkWallsService(
             .byteStream()
             .let { mapper.readValue<VkResponse<List<VkWall>>>(it) }
             .response
+    }
+
+    private companion object {
+        private const val MAX_GROUPS = 24
+        private const val MAX_POSTS = 10
+        private const val VK_API_VERSION = "5.131"
     }
 }

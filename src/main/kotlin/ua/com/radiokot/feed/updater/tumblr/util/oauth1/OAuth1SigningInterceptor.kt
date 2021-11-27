@@ -1,4 +1,5 @@
-package ua.com.radiokot.feed.updater.tumblr.util.oauth1/*
+package ua.com.radiokot.feed.updater.tumblr.util.oauth1
+/*
  * Copyright (C) 2015 Jake Wharton
  * Modified work Copyright 2019 Phil Olson
  *
@@ -29,10 +30,10 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 
-class Oauth1SigningInterceptor(
-    val getOauthKeys: () -> OauthKeys,
-    val nonce: String = UUID.randomUUID().toString(),
-    val timestamp: Long = System.currentTimeMillis() / 1000L
+class OAuth1SigningInterceptor(
+    private val nonce: String = UUID.randomUUID().toString(),
+    private val timestamp: Long = System.currentTimeMillis() / 1000L,
+    private val getOAuthKeys: () -> OAuth1Keys,
 ) : Interceptor {
 
     @Throws(IOException::class)
@@ -42,7 +43,7 @@ class Oauth1SigningInterceptor(
 
     @Throws(IOException::class)
     fun signRequest(request: Request): Request {
-        val keys = getOauthKeys()
+        val keys = getOAuthKeys()
 
         //Setup default parameters that will be sent with authorization header
         val parameters = hashMapOf(

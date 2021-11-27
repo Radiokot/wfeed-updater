@@ -6,10 +6,12 @@ import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 import ua.com.radiokot.feed.updater.di.injectionModules
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
+import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
 
 @KoinApiExtension
 object Application : KoinComponent {
     private val tumblrDashboardService: TumblrDashboardService by inject()
+    private val vkWallsService: VkWallsService by inject()
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -22,10 +24,10 @@ object Application : KoinComponent {
             modules(injectionModules)
         }
 
-        tumblrDashboardService
-            .getDashboardPosts(
-                sinceId = "668952449469612032",
-                type = "photo"
+        vkWallsService
+            .getGroupWalls(
+                groupIds = setOf("33376933", "35486596"),
+                wallPostsLimit = 1
             )
             .forEach {
                 println(it)

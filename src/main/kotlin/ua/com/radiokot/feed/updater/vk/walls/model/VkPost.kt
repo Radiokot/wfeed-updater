@@ -3,6 +3,7 @@ package ua.com.radiokot.feed.updater.vk.walls.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import ua.com.radiokot.feed.updater.util.json.UnixTimestampDateDeserializer
+import ua.com.radiokot.feed.updater.vk.walls.util.VkPostAttachmentsDeserializer
 import java.util.*
 
 data class VkPost(
@@ -20,20 +21,18 @@ data class VkPost(
     @JsonProperty("text")
     val text: String,
     @JsonProperty("attachments")
+    @JsonDeserialize(using = VkPostAttachmentsDeserializer::class)
     val attachments: List<Attachment>
 ) {
-    sealed class Attachment(
-        @JsonProperty("type")
-        val type: String
-    ) {
+    sealed class Attachment {
         data class Photo(
             @JsonProperty("id")
             val id: String,
             @JsonProperty("owner_id")
             val ownerId: String,
             @JsonProperty("sizes")
-            val sizes: SizeLink
-        ) : Attachment("photo") {
+            val sizes: List<SizeLink>
+        ) : Attachment() {
             data class SizeLink(
                 @JsonProperty("height")
                 val height: Int,
@@ -44,6 +43,10 @@ data class VkPost(
                 @JsonProperty("type")
                 val type: Char
             )
+
+            companion object {
+                const val TYPE = "photo"
+            }
         }
     }
 }

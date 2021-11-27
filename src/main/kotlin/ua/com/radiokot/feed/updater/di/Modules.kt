@@ -6,13 +6,18 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.core.module.Module
+import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ua.com.radiokot.feed.updater.extensions.getNotEmptyProperty
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.real.RealTumblrDashboardService
-import ua.com.radiokot.feed.updater.tumblr.util.oauth1.Oauth1SigningInterceptor
-import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OauthKeys
+import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1Keys
+import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1SigningInterceptor
+import ua.com.radiokot.feed.updater.vk.util.OAuth2MultipleTokensInterceptor
+import ua.com.radiokot.feed.updater.vk.util.VkApiProxyPrefixInterceptor
+import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
+import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkWallsService
 
 val injectionModules: List<Module> = listOf(
     // JSON
@@ -31,18 +36,52 @@ val injectionModules: List<Module> = listOf(
             }
         }
 
+        // Tumblr
         single(named(InjectedHttpClient.TUMBLR)) {
             OkHttpClient.Builder()
-                .addInterceptor(Oauth1SigningInterceptor({
-                    OauthKeys(
+                .addInterceptor(OAuth1SigningInterceptor {
+                    OAuth1Keys(
                         consumerKey = getNotEmptyProperty("TUMBLR_CONSUMER_KEY"),
                         consumerSecret = getNotEmptyProperty("TUMBLR_CONSUMER_SECRET"),
                         accessToken = getNotEmptyProperty("TUMBLR_ACCESS_TOKEN"),
                         accessSecret = getNotEmptyProperty("TUMBLR_ACCESS_SECRET")
                     )
-                }))
+                })
                 .addInterceptor(get<HttpLoggingInterceptor>())
                 .build()
+        }
+
+        // VK with access tokens as a param
+        factory(named(InjectedHttpClient.VK_WITH_PARAMS)) { params ->
+            OkHttpClient.Builder()
+                .addInterceptor(
+                    OAuth2MultipleTokensInterceptor(
+                        accessTokens = params[0]
+                    )
+                )
+                .apply {
+                    val proxyUrl = getPropertyOrNull("VK_API_PROXY_URL")
+                        ?.takeIf(String::isNotEmpty)
+
+                    if (proxyUrl != null) {
+                        addInterceptor(
+                            VkApiProxyPrefixInterceptor(
+                                proxyUrl = proxyUrl
+                            )
+                        )
+                    }
+                }
+                .addInterceptor(get<HttpLoggingInterceptor>())
+                .build()
+        }
+
+        // VK with all the tokens
+        single(named(InjectedHttpClient.VK)) {
+            val tokens = getNotEmptyProperty("VK_ACCESS_TOKENS")
+                .split(',')
+                .map(String::trim)
+
+            get<OkHttpClient>(named(InjectedHttpClient.VK_WITH_PARAMS)) { parametersOf(tokens) }
         }
     },
 
@@ -51,6 +90,13 @@ val injectionModules: List<Module> = listOf(
         single<TumblrDashboardService> {
             RealTumblrDashboardService(
                 tumblrHttpClient = get(named(InjectedHttpClient.TUMBLR)),
+                mapper = get()
+            )
+        }
+
+        single<VkWallsService> {
+            RealVkWallsService(
+                vkHttpClient = get(named(InjectedHttpClient.VK)),
                 mapper = get()
             )
         }
