@@ -19,6 +19,7 @@ object Application : KoinComponent {
             printLogger()
 
             fileProperties("/keystore.properties")
+            fileProperties("/vk_proxy.properties")
             environmentProperties()
 
             modules(injectionModules)
