@@ -1,7 +1,9 @@
 package ua.com.radiokot.feed.updater.posts.model
 
+import ua.com.radiokot.feed.updater.tumblr.dashboard.model.TumblrPost
 import ua.com.radiokot.feed.updater.vk.walls.model.VkPost
 import java.util.*
+import kotlin.math.abs
 
 data class FeedPostToSave(
     val apiId: String,
@@ -14,8 +16,8 @@ data class FeedPostToSave(
         val type: String
     ) {
         data class Photo(
-            val height: Int,
             val width: Int,
+            val height: Int,
             val url130: String?,
             val url604: String?,
             val url807: String?,
@@ -39,13 +41,43 @@ data class FeedPostToSave(
                     val maxSize = sortedProportionalSizes.last()
 
                     return Photo(
-                        height = maxSize.height,
                         width = maxSize.width,
+                        height = maxSize.height,
                         url130 = proportionalSizesMap['m']?.url,
                         url604 = proportionalSizesMap['x']?.url,
                         url807 = proportionalSizesMap['y']?.url,
                         url1280 = proportionalSizesMap['z']?.url,
                         url2560 = proportionalSizesMap['w']?.url,
+                    )
+                }
+
+                fun fromTumblr(tumblrPhoto: TumblrPost.Photo): Photo {
+                    val sortedSizes = tumblrPhoto.sizes
+                        .sortedBy { it.width }
+                        .toMutableList()
+
+                    val maxSize = sortedSizes.last()
+
+                    /**
+                     * Find best size for given [width],
+                     * remove it and all the smaller from the pool
+                     */
+                    fun popUrlForSize(width: Int): String? {
+                        return sortedSizes
+                            .filter { it.width <= width }
+                            .also { sortedSizes.removeAll(it) }
+                            .minByOrNull { abs(width - it.width) }
+                            ?.url
+                    }
+
+                    return Photo(
+                        width = maxSize.width,
+                        height = maxSize.height,
+                        url130 = popUrlForSize(130),
+                        url604 = popUrlForSize(604),
+                        url807 = popUrlForSize(807),
+                        url1280 = popUrlForSize(1280),
+                        url2560 = popUrlForSize(2560),
                     )
                 }
             }
@@ -67,5 +99,13 @@ data class FeedPostToSave(
         date = vkPost.date,
         url = "https://vk.com/wall${vkPost.ownerId}_${vkPost.id}",
         attachments = vkPost.attachments.map(Attachment.Companion::fromVk)
+    )
+
+    constructor(tumblrPost: TumblrPost) : this(
+        apiId = tumblrPost.id,
+        text = tumblrPost.summary,
+        date = tumblrPost.date,
+        url = tumblrPost.url,
+        attachments = tumblrPost.photos.map { Attachment.Photo.fromTumblr(it) }
     )
 }

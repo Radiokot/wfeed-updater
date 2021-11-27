@@ -15,22 +15,20 @@ data class TumblrPost(
     val date: Date,
     @JsonProperty("summary")
     val summary: String?,
-    @JsonProperty("photos")
-    val photos: List<Photo>?,
     @JsonProperty("post_url")
     val url: String,
+    @JsonProperty("photos")
+    val photos: List<Photo> = emptyList(),
 ) {
     data class Photo(
-        @JsonProperty("original_size")
-        val originalSize: SizeLink,
         @JsonProperty("alt_sizes")
-        val altSizes: List<SizeLink>
+        val sizes: List<SizeLink>
     ) {
         data class SizeLink(
-            @JsonProperty("height")
-            val height: Int,
             @JsonProperty("width")
             val width: Int,
+            @JsonProperty("height")
+            val height: Int,
             @JsonProperty("url")
             val url: String
         )

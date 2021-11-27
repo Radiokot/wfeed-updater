@@ -22,7 +22,7 @@ data class VkPost(
     val text: String,
     @JsonProperty("attachments")
     @JsonDeserialize(using = VkPostAttachmentsDeserializer::class)
-    val attachments: List<Attachment>
+    val attachments: List<Attachment> = emptyList()
 ) {
     sealed class Attachment {
         data class Photo(
@@ -34,10 +34,10 @@ data class VkPost(
             val sizes: List<SizeLink>
         ) : Attachment() {
             data class SizeLink(
-                @JsonProperty("height")
-                val height: Int,
                 @JsonProperty("width")
                 val width: Int,
+                @JsonProperty("height")
+                val height: Int,
                 @JsonProperty("url")
                 val url: String,
                 @JsonProperty("type")
