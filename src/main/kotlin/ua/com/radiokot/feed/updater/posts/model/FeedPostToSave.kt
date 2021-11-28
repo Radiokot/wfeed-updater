@@ -18,6 +18,7 @@ data class FeedPostToSave(
         val type: String
     ) {
         data class Photo(
+            val vkId: String?,
             val width: Int,
             val height: Int,
             val url130: String?,
@@ -43,6 +44,7 @@ data class FeedPostToSave(
                     val maxSize = sortedProportionalSizes.last()
 
                     return Photo(
+                        vkId = vkPhoto.ownerId + "_" + vkPhoto.id,
                         width = maxSize.width,
                         height = maxSize.height,
                         url130 = proportionalSizesMap['m']?.url,
@@ -73,6 +75,7 @@ data class FeedPostToSave(
                     }
 
                     return Photo(
+                        vkId = null,
                         width = maxSize.width,
                         height = maxSize.height,
                         url130 = popUrlForSize(130),
@@ -94,6 +97,12 @@ data class FeedPostToSave(
             }
         }
     }
+
+    val id: String
+        get() = "${author.id}_$timestamp"
+
+    val timestamp: Long
+        get() = date.time / 1000L
 
     constructor(
         vkPost: VkPost,

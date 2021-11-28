@@ -13,8 +13,8 @@ import org.koin.dsl.module
 import ua.com.radiokot.feed.updater.authors.service.FeedAuthorsService
 import ua.com.radiokot.feed.updater.authors.service.RealFeedAuthorsService
 import ua.com.radiokot.feed.updater.extensions.getNotEmptyProperty
-import ua.com.radiokot.feed.updater.posts.service.DummyFeedPostsService
 import ua.com.radiokot.feed.updater.posts.service.FeedPostsService
+import ua.com.radiokot.feed.updater.posts.service.RealFeedPostsService
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.real.RealTumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1Keys
@@ -40,7 +40,7 @@ val injectionModules: List<Module> = listOf(
     module {
         factory {
             HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = HttpLoggingInterceptor.Level.BASIC
             }
         }
 
@@ -123,7 +123,9 @@ val injectionModules: List<Module> = listOf(
         }
 
         single<FeedPostsService> {
-            DummyFeedPostsService()
+            RealFeedPostsService(
+                dataSource = get()
+            )
         }
     },
 
@@ -137,7 +139,9 @@ val injectionModules: List<Module> = listOf(
             val dbPassword = getNotEmptyProperty("DB_PASSWORD")
 
             BasicDataSource().apply {
-                url = "jdbc:mysql://$dbHost:$dbPort/$dbName?useSSL=false"
+                url = "jdbc:mysql://$dbHost:$dbPort/$dbName" +
+                        "?useSSL=false" +
+                        "&characterEncoding=utf8"
                 username = dbUser
                 password = dbPassword
 
