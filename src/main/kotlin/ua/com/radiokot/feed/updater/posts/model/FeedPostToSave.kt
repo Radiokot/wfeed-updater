@@ -1,5 +1,6 @@
 package ua.com.radiokot.feed.updater.posts.model
 
+import ua.com.radiokot.feed.updater.authors.model.FeedAuthor
 import ua.com.radiokot.feed.updater.tumblr.dashboard.model.TumblrPost
 import ua.com.radiokot.feed.updater.vk.walls.model.VkPost
 import java.util.*
@@ -10,6 +11,7 @@ data class FeedPostToSave(
     val text: String?,
     val date: Date,
     val url: String,
+    val author: FeedAuthor,
     val attachments: List<Attachment>
 ) {
     sealed class Attachment(
@@ -93,19 +95,27 @@ data class FeedPostToSave(
         }
     }
 
-    constructor(vkPost: VkPost) : this(
+    constructor(
+        vkPost: VkPost,
+        author: FeedAuthor
+    ) : this(
         apiId = vkPost.id,
         text = vkPost.text,
         date = vkPost.date,
         url = "https://vk.com/wall${vkPost.ownerId}_${vkPost.id}",
+        author = author,
         attachments = vkPost.attachments.map(Attachment.Companion::fromVk)
     )
 
-    constructor(tumblrPost: TumblrPost) : this(
+    constructor(
+        tumblrPost: TumblrPost,
+        author: FeedAuthor
+    ) : this(
         apiId = tumblrPost.id,
         text = tumblrPost.summary,
         date = tumblrPost.date,
         url = tumblrPost.url,
+        author = author,
         attachments = tumblrPost.photos.map { Attachment.Photo.fromTumblr(it) }
     )
 }
