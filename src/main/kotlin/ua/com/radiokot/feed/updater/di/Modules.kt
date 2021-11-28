@@ -9,6 +9,8 @@ import org.koin.core.module.Module
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ua.com.radiokot.feed.updater.authors.service.FeedAuthorsService
+import ua.com.radiokot.feed.updater.authors.service.RealFeedAuthorsService
 import ua.com.radiokot.feed.updater.extensions.getNotEmptyProperty
 import ua.com.radiokot.feed.updater.posts.service.DummyFeedPostsService
 import ua.com.radiokot.feed.updater.posts.service.FeedPostsService
@@ -22,6 +24,8 @@ import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
 import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkWallsService
+import java.sql.Connection
+import java.sql.DriverManager
 
 val injectionModules: List<Module> = listOf(
     // JSON
@@ -112,8 +116,31 @@ val injectionModules: List<Module> = listOf(
             )
         }
 
+        single<FeedAuthorsService> {
+            RealFeedAuthorsService(
+                databaseConnection = get()
+            )
+        }
+
         single<FeedPostsService> {
             DummyFeedPostsService()
+        }
+    },
+
+    // Database
+    module {
+        single<Connection> {
+            val dbName = getNotEmptyProperty("DB_NAME")
+            val dbHost = getNotEmptyProperty("DB_HOST")
+            val dbPort = getNotEmptyProperty("DB_PORT")
+            val dbUser = getNotEmptyProperty("DB_USER")
+            val dbPassword = getNotEmptyProperty("DB_PASSWORD")
+
+            DriverManager.getConnection(
+                "jdbc:mysql://$dbHost:$dbPort/$dbName?useSSL=false",
+                dbUser,
+                dbPassword
+            )
         }
     },
 )

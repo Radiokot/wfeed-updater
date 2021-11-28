@@ -1,8 +1,9 @@
 package ua.com.radiokot.feed.updater.authors.model
 
+import java.sql.ResultSet
 import java.util.*
 
-class FeedAuthor(
+data class FeedAuthor(
     val id: String,
     val apiId: String,
     val site: FeedSite,
@@ -10,6 +11,15 @@ class FeedAuthor(
     val photoUrl: String,
     val lastPostDate: Date,
 ) {
+    constructor(authorsResultSet: ResultSet) : this(
+        id = authorsResultSet.getString("id"),
+        apiId = authorsResultSet.getString("apiId"),
+        site = authorsResultSet.getInt("siteId").let { FeedSite.valueOf(it) },
+        name = authorsResultSet.getString("authorName"),
+        photoUrl = authorsResultSet.getString("authorPhoto"),
+        lastPostDate = Date(authorsResultSet.getLong("authorLastPostDate") * 1000)
+    )
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -23,5 +33,9 @@ class FeedAuthor(
 
     override fun hashCode(): Int {
         return id.hashCode()
+    }
+
+    override fun toString(): String {
+        return "FeedAuthor(id='$id', name='$name')"
     }
 }

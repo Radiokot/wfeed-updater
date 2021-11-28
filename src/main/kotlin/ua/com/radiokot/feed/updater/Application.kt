@@ -4,6 +4,8 @@ import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
+import ua.com.radiokot.feed.updater.authors.model.FeedSite
+import ua.com.radiokot.feed.updater.authors.service.FeedAuthorsService
 import ua.com.radiokot.feed.updater.di.injectionModules
 import ua.com.radiokot.feed.updater.posts.service.FeedPostsService
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
@@ -16,6 +18,7 @@ object Application : KoinComponent {
     private val tumblrDashboardService: TumblrDashboardService by inject()
     private val vkWallsService: VkWallsService by inject()
     private val vkNewsfeedService: VkNewsfeedService by inject()
+    private val feedAuthorsService: FeedAuthorsService by inject()
     private val feedPostsService: FeedPostsService by inject()
 
     @JvmStatic
@@ -25,6 +28,7 @@ object Application : KoinComponent {
 
             fileProperties("/keystore.properties")
             fileProperties("/vk_proxy.properties")
+            fileProperties("/database.properties")
             environmentProperties()
 
             modules(injectionModules)
@@ -62,7 +66,7 @@ object Application : KoinComponent {
 
         VkUpdater(vkNewsfeedService, feedPostsService)
             .update(
-                feedAuthors = emptyList(),
+                feedAuthors = feedAuthorsService.getAuthors(FeedSite.VK),
                 startTimeUnix = System.currentTimeMillis() / 1000L - 3600//3600 * 24
             )
     }

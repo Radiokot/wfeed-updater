@@ -33,6 +33,8 @@ dependencies {
 
     implementation "io.insert-koin:koin-core:$koin_version"
     testImplementation "io.insert-koin:koin-test:$koin_version"
+
+    implementation 'mysql:mysql-connector-java:8.0.27'
 }
 
 compileKotlin {
