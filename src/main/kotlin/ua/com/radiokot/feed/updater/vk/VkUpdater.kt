@@ -1,7 +1,9 @@
 package ua.com.radiokot.feed.updater.vk
 
 import ua.com.radiokot.feed.updater.authors.model.FeedAuthor
+import ua.com.radiokot.feed.updater.authors.model.FeedAuthorDataToUpdate
 import ua.com.radiokot.feed.updater.authors.model.FeedSite
+import ua.com.radiokot.feed.updater.authors.service.FeedAuthorsService
 import ua.com.radiokot.feed.updater.posts.model.FeedPostToSave
 import ua.com.radiokot.feed.updater.posts.service.FeedPostsService
 import ua.com.radiokot.feed.updater.util.ShittyPostChecker
@@ -12,11 +14,13 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 /**
- * Updates feed from VK newsfeed posts.
+ * Updates feed from VK newsfeed posts,
+ * also updates author data if it is updated in VK.
  */
 class VkUpdater(
     private val vkNewsfeedService: VkNewsfeedService,
     private val feedPostsService: FeedPostsService,
+    private val feedAuthorsService: FeedAuthorsService,
 ) {
     private data class VkNewsfeed(
         val posts: List<VkPost>,
@@ -91,6 +95,31 @@ class VkUpdater(
             )
 
         feedPostsService.savePosts(postsToSave)
+
+        val authorsToUpdate = postsByVkAuthor
+            .keys
+            .map { vkAuthor ->
+                vkAuthor.id to FeedAuthorDataToUpdate(vkAuthor)
+            }
+            .mapNotNull { (authorApiId, dataToUpdate) ->
+                val feedAuthor = feedAuthorsByApiId[authorApiId]
+                if (feedAuthor != null && feedAuthor.isUpdateRequired(dataToUpdate))
+                    feedAuthor.id to dataToUpdate
+                else
+                    null
+            }
+
+        if (authorsToUpdate.isNotEmpty()) {
+            Logger.getGlobal()
+                .log(
+                    Level.INFO, "call_update_authors: " +
+                            "authorsToUpdate=${authorsToUpdate.size}"
+                )
+
+            authorsToUpdate.forEach { (authorId, dataToUpdate) ->
+                feedAuthorsService.updateAuthorData(authorId, dataToUpdate)
+            }
+        }
     }
 
     private fun getNewsfeed(startTimeUnix: Long): VkNewsfeed {

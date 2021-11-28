@@ -42,7 +42,41 @@ class RealFeedAuthorsService(
         }
     }
 
-    override fun updateAuthorData(authorId: String, dataToUpdate: FeedAuthorDataToUpdate) {
-        TODO("Not yet implemented")
+    override fun updateAuthorData(
+        authorId: Int,
+        dataToUpdate: FeedAuthorDataToUpdate
+    ) {
+        Logger.getGlobal()
+            .log(
+                Level.INFO,
+                "update: " +
+                        "authorId=$authorId"
+            )
+
+        dataSource.connection.use { connection ->
+            connection.autoCommit = true
+
+            val preparedStatement = connection.prepareStatement(
+                "UPDATE author SET authorName=?, authorPhoto=? WHERE id=?"
+            ).apply {
+                setString(1, dataToUpdate.name)
+                setString(2, dataToUpdate.photoUrl)
+                setInt(3, authorId)
+            }
+
+            preparedStatement.use { statement ->
+                try {
+                    statement.executeUpdate()
+                } catch (e: Exception) {
+                    Logger.getGlobal()
+                        .log(
+                            Level.SEVERE, "error: " +
+                                    "error=$e,\n" +
+                                    "authorId=$authorId, " +
+                                    "data=$dataToUpdate"
+                        )
+                }
+            }
+        }
     }
 }

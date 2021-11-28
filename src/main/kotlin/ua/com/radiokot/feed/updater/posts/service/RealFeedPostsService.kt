@@ -12,7 +12,6 @@ class RealFeedPostsService(
     private val dataSource: DataSource
 ) : FeedPostsService {
 
-    //TODO: Update author data from VK
     override fun savePosts(posts: List<FeedPostToSave>) {
         Logger.getGlobal()
             .log(
@@ -35,8 +34,8 @@ class RealFeedPostsService(
                 )
 
                 val attsInsertStatement = connection.prepareStatement(
-                    "INSERT IGNORE INTO `atts`(`id`, `type`, `VkAttId`, `photoHeight`, `photoWidth`," +
-                            " `photo130`, `photo604`, `photo807`, `photo1280`, `photo2560`) " +
+                    "INSERT IGNORE INTO atts(id, type, VkAttId, photoHeight, photoWidth," +
+                            " photo130, photo604, photo807, photo1280, photo2560) " +
                             "VALUES (?,?,?,?,?,?,?,?,?,?)"
                 )
 
@@ -45,7 +44,7 @@ class RealFeedPostsService(
                         var i = 0
                         setString(++i, post.id)
                         setString(++i, post.apiId)
-                        setInt(++i, post.author.id.toInt())
+                        setInt(++i, post.author.id)
                         setString(++i, post.text)
                         setLong(++i, post.timestamp)
                         setString(++i, post.url)

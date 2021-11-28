@@ -65,7 +65,7 @@ object Application : KoinComponent {
 //            }
 
         val lastVkPostDate = feedPostsService.getLastPostDate(FeedSite.VK)
-        VkUpdater(vkNewsfeedService, feedPostsService)
+        VkUpdater(vkNewsfeedService, feedPostsService, feedAuthorsService)
             .update(
                 feedAuthors = feedAuthorsService.getAuthors(FeedSite.VK),
                 startTimeUnix = (lastVkPostDate.time / 1000L)

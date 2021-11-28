@@ -8,7 +8,7 @@ interface FeedAuthorsService {
     fun getAuthors(site: FeedSite?): List<FeedAuthor>
 
     fun updateAuthorData(
-        authorId: String,
+        authorId: Int,
         dataToUpdate: FeedAuthorDataToUpdate
     )
 }

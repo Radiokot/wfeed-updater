@@ -4,7 +4,7 @@ import java.sql.ResultSet
 import java.util.*
 
 data class FeedAuthor(
-    val id: String,
+    val id: Int,
     val apiId: String,
     val site: FeedSite,
     val name: String,
@@ -12,7 +12,7 @@ data class FeedAuthor(
     val lastPostDate: Date,
 ) {
     constructor(authorsResultSet: ResultSet) : this(
-        id = authorsResultSet.getString("id"),
+        id = authorsResultSet.getInt("id"),
         apiId = authorsResultSet.getString("apiId"),
         site = authorsResultSet.getInt("siteId").let { FeedSite.valueOf(it) },
         name = authorsResultSet.getString("authorName"),
@@ -38,4 +38,8 @@ data class FeedAuthor(
     override fun toString(): String {
         return "FeedAuthor(id='$id', name='$name')"
     }
+
+    fun isUpdateRequired(dataToUpdate: FeedAuthorDataToUpdate): Boolean =
+        name != dataToUpdate.name
+                || photoUrl != dataToUpdate.photoUrl
 }
