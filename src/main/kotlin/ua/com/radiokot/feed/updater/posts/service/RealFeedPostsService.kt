@@ -1,7 +1,9 @@
 package ua.com.radiokot.feed.updater.posts.service
 
+import ua.com.radiokot.feed.updater.authors.model.FeedSite
 import ua.com.radiokot.feed.updater.posts.model.FeedPostToSave
 import java.sql.PreparedStatement
+import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sql.DataSource
@@ -9,6 +11,8 @@ import javax.sql.DataSource
 class RealFeedPostsService(
     private val dataSource: DataSource
 ) : FeedPostsService {
+
+    //TODO: Update author data from VK
     override fun savePosts(posts: List<FeedPostToSave>) {
         Logger.getGlobal()
             .log(
@@ -87,6 +91,72 @@ class RealFeedPostsService(
                         )
 
                     connection.rollback()
+                }
+            }
+        }
+    }
+
+    override fun getLastPostApiId(site: FeedSite): String {
+        Logger.getGlobal()
+            .log(
+                Level.INFO, "get: " +
+                        "site=$site"
+            )
+
+        return dataSource.connection.use { connection ->
+            val preparedStatement = connection.prepareStatement(
+                "SELECT post.apiId FROM post, author " +
+                        "WHERE post.authorId=author.id " +
+                        "AND author.siteId=? " +
+                        "ORDER BY post.date " +
+                        "DESC LIMIT 1"
+            ).apply {
+                setInt(1, site.i)
+            }
+
+            preparedStatement.use { statement ->
+                statement.executeQuery().use { resultSet ->
+                    resultSet.next()
+                    resultSet.getString(1).also {
+                        Logger.getGlobal()
+                            .log(
+                                Level.INFO, "got: " +
+                                        "apiId=$it"
+                            )
+                    }
+                }
+            }
+        }
+    }
+
+    override fun getLastPostDate(site: FeedSite): Date {
+        Logger.getGlobal()
+            .log(
+                Level.INFO, "get: " +
+                        "site=$site"
+            )
+
+        return dataSource.connection.use { connection ->
+            val preparedStatement = connection.prepareStatement(
+                "SELECT post.date FROM post, author " +
+                        "WHERE post.authorId=author.id " +
+                        "AND author.siteId=? " +
+                        "ORDER BY post.date " +
+                        "DESC LIMIT 1"
+            ).apply {
+                setInt(1, site.i)
+            }
+
+            preparedStatement.use { statement ->
+                statement.executeQuery().use { resultSet ->
+                    resultSet.next()
+                    Date(resultSet.getLong(1) * 1000).also {
+                        Logger.getGlobal()
+                            .log(
+                                Level.INFO, "got: " +
+                                        "date=$it"
+                            )
+                    }
                 }
             }
         }

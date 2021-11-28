@@ -2,6 +2,7 @@ package ua.com.radiokot.feed.updater.posts.service
 
 import ua.com.radiokot.feed.updater.authors.model.FeedSite
 import ua.com.radiokot.feed.updater.posts.model.FeedPostToSave
+import java.util.*
 
 class DummyFeedPostsService : FeedPostsService {
     override fun savePosts(posts: List<FeedPostToSave>) {
@@ -34,5 +35,13 @@ class DummyFeedPostsService : FeedPostsService {
             ?.also { tumblrLastPostDate ->
                 println("Tumblr last post date $tumblrLastPostDate")
             }
+    }
+
+    override fun getLastPostDate(site: FeedSite): Date {
+        TODO("Not yet implemented")
+    }
+
+    override fun getLastPostApiId(site: FeedSite): String {
+        TODO("Not yet implemented")
     }
 }

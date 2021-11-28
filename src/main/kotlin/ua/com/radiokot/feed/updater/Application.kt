@@ -64,13 +64,12 @@ object Application : KoinComponent {
 //                println(it.date.toString() + " " + it.text)
 //            }
 
+        val lastVkPostDate = feedPostsService.getLastPostDate(FeedSite.VK)
         VkUpdater(vkNewsfeedService, feedPostsService)
             .update(
                 feedAuthors = feedAuthorsService.getAuthors(FeedSite.VK),
-                startTimeUnix = System.currentTimeMillis() / 1000L - 3600//3600 * 24
+                startTimeUnix = (lastVkPostDate.time / 1000L)
+                    .coerceAtLeast(System.currentTimeMillis() / 1000L - 3600 * 24)
             )
-//        feedAuthorsService.getAuthors(FeedSite.TUMBLR)
-//        feedAuthorsService.getAuthors(FeedSite.VK)
-//        feedAuthorsService.getAuthors(FeedSite.INTERNAL)
     }
 }
