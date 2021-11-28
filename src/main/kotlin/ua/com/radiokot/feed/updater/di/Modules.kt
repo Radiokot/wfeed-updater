@@ -10,6 +10,8 @@ import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ua.com.radiokot.feed.updater.extensions.getNotEmptyProperty
+import ua.com.radiokot.feed.updater.posts.service.DummyFeedPostsService
+import ua.com.radiokot.feed.updater.posts.service.FeedPostsService
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.real.RealTumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1Keys
@@ -108,6 +110,10 @@ val injectionModules: List<Module> = listOf(
                 vkHttpClient = get(named(InjectedHttpClient.VK)),
                 mapper = get()
             )
+        }
+
+        single<FeedPostsService> {
+            DummyFeedPostsService()
         }
     },
 )

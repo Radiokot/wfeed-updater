@@ -16,7 +16,7 @@ class RealVkNewsfeedService(
     private val mapper: ObjectMapper
 ) : VkNewsfeedService {
     override fun getNewsfeed(
-        startTime: Long?,
+        startTimeUnix: Long?,
         count: Int?,
         startFrom: String?
     ): VkNewsfeedPage {
@@ -31,7 +31,7 @@ class RealVkNewsfeedService(
                     .addQueryParameter("v", VK_API_VERSION)
                     .addQueryParameter("filters", "post")
                     .addQueryParameter("fields", "photo_100")
-                    .addNotNullQueryParameter("start_time", startTime)
+                    .addNotNullQueryParameter("start_time", startTimeUnix)
                     .addNotNullQueryParameter("start_from", startFrom)
                     .addNotNullQueryParameter("count", count)
                     .build()
