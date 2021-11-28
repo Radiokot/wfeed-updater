@@ -29,8 +29,7 @@ class VkUpdater(
     ) {
         Logger.getGlobal()
             .log(
-                Level.INFO, "VkUpdater.update(): " +
-                        "start, " +
+                Level.INFO, "start: " +
                         "startTimeUnix=$startTimeUnix, " +
                         "feedAuthors=${feedAuthors.size}"
             )
@@ -39,8 +38,7 @@ class VkUpdater(
 
         Logger.getGlobal()
             .log(
-                Level.INFO, "VkUpdater.update(): " +
-                        "got_newsfeed, " +
+                Level.INFO, "got_newsfeed: " +
                         "posts=${newsfeed.posts.size}"
             )
 
@@ -70,28 +68,25 @@ class VkUpdater(
 
         Logger.getGlobal()
             .log(
-                Level.INFO, "VkUpdater.update(): " +
-                        "filtered_posts, " +
+                Level.INFO, "filtered_posts: " +
                         "foundFeedAuthors=${filteredPostsByFeedAuthor.size}"
             )
 
-        filteredPostsByFeedAuthor
-            .forEach { (feedAuthor, posts) ->
-
-                Logger.getGlobal()
-                    .log(
-                        Level.INFO, "VkUpdater.update(): " +
-                                "call_save_posts, " +
-                                "feedAuthor=$feedAuthor, " +
-                                "posts=${posts.size}"
-                    )
-
-                feedPostsService.savePosts(
-                    posts.map { post ->
-                        FeedPostToSave(post, feedAuthor)
-                    }
-                )
+        val postsToSave = filteredPostsByFeedAuthor
+            .map { (feedAuthor, posts) ->
+                posts.map { post ->
+                    FeedPostToSave(post, feedAuthor)
+                }
             }
+            .flatten()
+
+        Logger.getGlobal()
+            .log(
+                Level.INFO, "call_save_posts: " +
+                        "posts=${postsToSave.size}"
+            )
+
+        feedPostsService.savePosts(postsToSave)
     }
 
     private fun getNewsfeed(startTimeUnix: Long): VkNewsfeed {

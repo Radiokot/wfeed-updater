@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.apache.commons.dbcp2.BasicDataSource
 import org.koin.core.module.Module
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
@@ -24,8 +25,7 @@ import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
 import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkWallsService
-import java.sql.Connection
-import java.sql.DriverManager
+import javax.sql.DataSource
 
 val injectionModules: List<Module> = listOf(
     // JSON
@@ -118,7 +118,7 @@ val injectionModules: List<Module> = listOf(
 
         single<FeedAuthorsService> {
             RealFeedAuthorsService(
-                databaseConnection = get()
+                dataSource = get()
             )
         }
 
@@ -129,18 +129,21 @@ val injectionModules: List<Module> = listOf(
 
     // Database
     module {
-        single<Connection> {
+        single<DataSource> {
             val dbName = getNotEmptyProperty("DB_NAME")
             val dbHost = getNotEmptyProperty("DB_HOST")
             val dbPort = getNotEmptyProperty("DB_PORT")
             val dbUser = getNotEmptyProperty("DB_USER")
             val dbPassword = getNotEmptyProperty("DB_PASSWORD")
 
-            DriverManager.getConnection(
-                "jdbc:mysql://$dbHost:$dbPort/$dbName?useSSL=false",
-                dbUser,
-                dbPassword
-            )
+            BasicDataSource().apply {
+                url = "jdbc:mysql://$dbHost:$dbPort/$dbName?useSSL=false"
+                username = dbUser
+                password = dbPassword
+
+                minIdle = 3
+                maxIdle = 9
+            }
         }
     },
 )

@@ -69,5 +69,8 @@ object Application : KoinComponent {
                 feedAuthors = feedAuthorsService.getAuthors(FeedSite.VK),
                 startTimeUnix = System.currentTimeMillis() / 1000L - 3600//3600 * 24
             )
+//        feedAuthorsService.getAuthors(FeedSite.TUMBLR)
+//        feedAuthorsService.getAuthors(FeedSite.VK)
+//        feedAuthorsService.getAuthors(FeedSite.INTERNAL)
     }
 }

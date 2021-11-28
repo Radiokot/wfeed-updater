@@ -24,7 +24,7 @@ class DummyFeedPostsService : FeedPostsService {
             .forEach { (author, authorsPosts) ->
                 val lastPostDate = authorsPosts.last().date
                 if (author.lastPostDate < lastPostDate) {
-                    println("${author.name}(${author.id} last post date ${author.lastPostDate} => $lastPostDate")
+                    println("$author last post date ${author.lastPostDate} => $lastPostDate")
                 }
             }
 

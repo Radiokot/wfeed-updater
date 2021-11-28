@@ -35,6 +35,7 @@ dependencies {
     testImplementation "io.insert-koin:koin-test:$koin_version"
 
     implementation 'mysql:mysql-connector-java:8.0.27'
+    implementation 'org.apache.commons:commons-dbcp2:2.9.0'
 }
 
 compileKotlin {
