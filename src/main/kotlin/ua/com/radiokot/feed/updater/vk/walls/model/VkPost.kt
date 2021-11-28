@@ -1,5 +1,6 @@
 package ua.com.radiokot.feed.updater.vk.walls.model
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import ua.com.radiokot.feed.updater.util.json.UnixTimestampDateDeserializer
@@ -8,10 +9,10 @@ import java.util.*
 
 data class VkPost(
     @JsonProperty("id")
+    @JsonAlias("post_id")
     val id: String,
-    @JsonProperty("from_id")
-    val fromId: String,
     @JsonProperty("owner_id")
+    @JsonAlias("source_id")
     val ownerId: String,
     @JsonProperty("date")
     @JsonDeserialize(using = UnixTimestampDateDeserializer::class)

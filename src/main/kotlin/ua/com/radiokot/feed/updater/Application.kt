@@ -6,12 +6,14 @@ import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 import ua.com.radiokot.feed.updater.di.injectionModules
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
+import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
 
 @KoinApiExtension
 object Application : KoinComponent {
     private val tumblrDashboardService: TumblrDashboardService by inject()
     private val vkWallsService: VkWallsService by inject()
+    private val vkNewsfeedService: VkNewsfeedService by inject()
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -45,5 +47,14 @@ object Application : KoinComponent {
 //                    println(FeedPostToSave(post))
 //                }
 //            }
+
+        vkNewsfeedService
+            .getNewsfeed(
+                count = 10,
+            )
+            .posts
+            .forEach {
+                println(it.date.toString() + " " + it.text)
+            }
     }
 }

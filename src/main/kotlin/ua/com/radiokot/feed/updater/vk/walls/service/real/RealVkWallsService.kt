@@ -7,6 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import ua.com.radiokot.feed.updater.extensions.addNotNullQueryParameter
 import ua.com.radiokot.feed.updater.vk.model.VkResponse
+import ua.com.radiokot.feed.updater.vk.util.VkRequestRateLimiter
 import ua.com.radiokot.feed.updater.vk.walls.model.VkWall
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
 
@@ -41,6 +42,8 @@ class RealVkWallsService(
                     .build()
             )
             .build()
+
+        VkRequestRateLimiter.waitBeforeRequest()
 
         return vkHttpClient
             .newCall(request)

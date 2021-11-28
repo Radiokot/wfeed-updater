@@ -16,7 +16,9 @@ import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1Keys
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1SigningInterceptor
 import ua.com.radiokot.feed.updater.vk.util.OAuth2MultipleTokensInterceptor
 import ua.com.radiokot.feed.updater.vk.util.VkApiProxyPrefixInterceptor
+import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
+import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkWallsService
 
 val injectionModules: List<Module> = listOf(
@@ -96,6 +98,13 @@ val injectionModules: List<Module> = listOf(
 
         single<VkWallsService> {
             RealVkWallsService(
+                vkHttpClient = get(named(InjectedHttpClient.VK)),
+                mapper = get()
+            )
+        }
+
+        single<VkNewsfeedService> {
+            RealVkNewsfeedService(
                 vkHttpClient = get(named(InjectedHttpClient.VK)),
                 mapper = get()
             )
