@@ -60,7 +60,11 @@ class VkUpdater(
             }
             .mapValues { (_, posts) ->
                 posts
-                    .filter { !it.markedAsAds && !ShittyPostChecker.isTextShitty(it.text) }
+                    .filter { post ->
+                        !post.markedAsAds
+                                && !ShittyPostChecker.isTextShitty(post.text)
+                                && post.attachments.isNotEmpty()
+                    }
             }
             .filterValues { posts ->
                 posts.isNotEmpty()
