@@ -1,12 +1,18 @@
 # Warm Feed updater
-Updates [Warm Feed](https://radiokot.com.ua/p/feed/) database from VK and Tumblr sources.
+Updates [Warm Feed](https://radiokot.com.ua/p/feed/) database from VK and Tumblr sources for known authors.
 
-Build
+### VK
+Posts source is the user's newsfeed (the user is defined by `VK_ACCESS_TOKEN`). Also updates author photos and names.
+
+### Tumblr
+Posts source is the user's dashboard (the user is defined by `TUMBLR_ACCESS_TOKEN`). Does not update author photos and names.
+
+## Build
 ```bash
 ./gradlew shadowJar
 ```
 
-Run
+## Run
 ```bash
 TUMBLR_CONSUMER_KEY=*** \
 TUMBLR_CONSUMER_SECRET=*** \
