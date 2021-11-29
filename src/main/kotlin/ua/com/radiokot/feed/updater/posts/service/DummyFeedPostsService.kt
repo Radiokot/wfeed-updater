@@ -37,11 +37,11 @@ class DummyFeedPostsService : FeedPostsService {
             }
     }
 
-    override fun getLastPostDate(site: FeedSite): Date {
+    override fun getLastPostDate(site: FeedSite): Date? {
         TODO("Not yet implemented")
     }
 
-    override fun getLastPostApiId(site: FeedSite): String {
+    override fun getLastPostApiId(site: FeedSite): String? {
         TODO("Not yet implemented")
     }
 }

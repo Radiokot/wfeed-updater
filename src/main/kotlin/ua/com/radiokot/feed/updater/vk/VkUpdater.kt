@@ -21,6 +21,7 @@ class VkUpdater(
     private val vkNewsfeedService: VkNewsfeedService,
     private val feedPostsService: FeedPostsService,
     private val feedAuthorsService: FeedAuthorsService,
+    private val vkPhotoProxyUrl: String?,
 ) {
     private data class VkNewsfeed(
         val posts: List<VkPost>,
@@ -83,7 +84,11 @@ class VkUpdater(
         val postsToSave = filteredPostsByFeedAuthor
             .map { (feedAuthor, posts) ->
                 posts.map { post ->
-                    FeedPostToSave(post, feedAuthor)
+                    FeedPostToSave(
+                        vkPost = post,
+                        author = feedAuthor,
+                        vkPhotoProxyUrl = vkPhotoProxyUrl
+                    )
                 }
             }
             .flatten()

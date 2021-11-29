@@ -30,7 +30,10 @@ data class FeedPostToSave(
             companion object {
                 const val TYPE = "photo"
 
-                fun fromVk(vkPhoto: VkPost.Attachment.Photo): Photo {
+                fun fromVk(
+                    vkPhoto: VkPost.Attachment.Photo,
+                    vkPhotoProxyUrl: String? = null
+                ): Photo {
                     // https://vk.com/dev/photo_sizes
                     val proportionalSizeTypes = linkedSetOf('m', 'x', 'y', 'z', 'w')
 
@@ -43,15 +46,26 @@ data class FeedPostToSave(
 
                     val maxSize = sortedProportionalSizes.last()
 
+                    fun String.appendProxyIfNeeded(): String =
+                        if (vkPhotoProxyUrl != null)
+                            vkPhotoProxyUrl + this
+                        else
+                            this
+
                     return Photo(
                         vkId = vkPhoto.ownerId + "_" + vkPhoto.id,
                         width = maxSize.width,
                         height = maxSize.height,
-                        url130 = proportionalSizesMap['m']?.url,
-                        url604 = proportionalSizesMap['x']?.url,
-                        url807 = proportionalSizesMap['y']?.url,
-                        url1280 = proportionalSizesMap['z']?.url,
-                        url2560 = proportionalSizesMap['w']?.url,
+                        url130 = proportionalSizesMap['m']?.url
+                            ?.appendProxyIfNeeded(),
+                        url604 = proportionalSizesMap['x']?.url
+                            ?.appendProxyIfNeeded(),
+                        url807 = proportionalSizesMap['y']?.url
+                            ?.appendProxyIfNeeded(),
+                        url1280 = proportionalSizesMap['z']?.url
+                            ?.appendProxyIfNeeded(),
+                        url2560 = proportionalSizesMap['w']?.url
+                            ?.appendProxyIfNeeded(),
                     )
                 }
 
@@ -89,10 +103,13 @@ data class FeedPostToSave(
         }
 
         companion object {
-            fun fromVk(vkAttachment: VkPost.Attachment): Attachment {
+            fun fromVk(
+                vkAttachment: VkPost.Attachment,
+                vkPhotoProxyUrl: String? = null
+            ): Attachment {
                 return when (vkAttachment) {
                     is VkPost.Attachment.Photo ->
-                        Photo.fromVk(vkAttachment)
+                        Photo.fromVk(vkAttachment, vkPhotoProxyUrl)
                 }
             }
         }
@@ -106,14 +123,15 @@ data class FeedPostToSave(
 
     constructor(
         vkPost: VkPost,
-        author: FeedAuthor
+        author: FeedAuthor,
+        vkPhotoProxyUrl: String? = null
     ) : this(
         apiId = vkPost.id,
         text = vkPost.text,
         date = vkPost.date,
         url = "https://vk.com/wall${vkPost.ownerId}_${vkPost.id}",
         author = author,
-        attachments = vkPost.attachments.map(Attachment.Companion::fromVk)
+        attachments = vkPost.attachments.map { Attachment.fromVk(it, vkPhotoProxyUrl) }
     )
 
     constructor(

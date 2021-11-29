@@ -65,11 +65,21 @@ object Application : KoinComponent {
 //            }
 
         val lastVkPostDate = feedPostsService.getLastPostDate(FeedSite.VK)
-        VkUpdater(vkNewsfeedService, feedPostsService, feedAuthorsService)
+        val minVkFeedStartTimeUnix = System.currentTimeMillis() / 1000L - 3600 * 24
+        val vkFeedStartTimeUnix =
+            if (lastVkPostDate != null)
+                (lastVkPostDate.time / 1000L).coerceAtLeast(minVkFeedStartTimeUnix)
+            else
+                minVkFeedStartTimeUnix
+        VkUpdater(
+            vkNewsfeedService,
+            feedPostsService,
+            feedAuthorsService,
+            getKoin().getProperty("VK_PHOTO_PROXY_URL")
+        )
             .update(
                 feedAuthors = feedAuthorsService.getAuthors(FeedSite.VK),
-                startTimeUnix = (lastVkPostDate.time / 1000L)
-                    .coerceAtLeast(System.currentTimeMillis() / 1000L - 3600 * 24)
+                startTimeUnix = vkFeedStartTimeUnix
             )
     }
 }

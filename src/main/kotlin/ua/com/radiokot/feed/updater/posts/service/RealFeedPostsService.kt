@@ -72,6 +72,7 @@ class RealFeedPostsService(
                                     }
                                 }
                             )
+                            addBatch()
                         }
                     }
                 }
@@ -95,7 +96,7 @@ class RealFeedPostsService(
         }
     }
 
-    override fun getLastPostApiId(site: FeedSite): String {
+    override fun getLastPostApiId(site: FeedSite): String? {
         Logger.getGlobal()
             .log(
                 Level.INFO, "get: " +
@@ -115,20 +116,22 @@ class RealFeedPostsService(
 
             preparedStatement.use { statement ->
                 statement.executeQuery().use { resultSet ->
-                    resultSet.next()
-                    resultSet.getString(1).also {
-                        Logger.getGlobal()
-                            .log(
-                                Level.INFO, "got: " +
-                                        "apiId=$it"
-                            )
-                    }
+                    resultSet
+                        .takeIf { it.next() }
+                        ?.getString(1)
+                        .also {
+                            Logger.getGlobal()
+                                .log(
+                                    Level.INFO, "got: " +
+                                            "apiId=$it"
+                                )
+                        }
                 }
             }
         }
     }
 
-    override fun getLastPostDate(site: FeedSite): Date {
+    override fun getLastPostDate(site: FeedSite): Date? {
         Logger.getGlobal()
             .log(
                 Level.INFO, "get: " +
@@ -148,14 +151,16 @@ class RealFeedPostsService(
 
             preparedStatement.use { statement ->
                 statement.executeQuery().use { resultSet ->
-                    resultSet.next()
-                    Date(resultSet.getLong(1) * 1000).also {
-                        Logger.getGlobal()
-                            .log(
-                                Level.INFO, "got: " +
-                                        "date=$it"
-                            )
-                    }
+                    resultSet
+                        .takeIf { it.next() }
+                        ?.let { Date(it.getLong(1) * 1000) }
+                        .also {
+                            Logger.getGlobal()
+                                .log(
+                                    Level.INFO, "got: " +
+                                            "date=$it"
+                                )
+                        }
                 }
             }
         }

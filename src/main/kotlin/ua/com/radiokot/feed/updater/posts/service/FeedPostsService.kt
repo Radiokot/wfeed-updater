@@ -7,7 +7,7 @@ import java.util.*
 interface FeedPostsService {
     fun savePosts(posts: List<FeedPostToSave>)
 
-    fun getLastPostApiId(site: FeedSite): String
+    fun getLastPostApiId(site: FeedSite): String?
 
-    fun getLastPostDate(site: FeedSite): Date
+    fun getLastPostDate(site: FeedSite): Date?
 }
