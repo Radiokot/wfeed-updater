@@ -5,7 +5,8 @@ object ShittyPostChecker {
             "|vk\\.cc/|сообществ|&#|интернет-магазин|инстаграм| трек|оффтоп|offtop|сервис|недорого" +
             "|shipping|sponsoring|теплофид|бесплатн|узнай|репост|creative cloud|ютубер|закажи" +
             "|iqoption|продолжение|рекоменд|10120976|блогер|нажми|предложение|инсту|конкурс" +
-            "|скид(кой |ка )|загляни|ребят|читать|показать полностью|подолгу|club\\d+|follow me)").toRegex()
+            "|скид(кой |ка )|загляни|ребят|читать|показать полностью|подолгу|club\\d+|follow me" +
+            "|коммент)").toRegex()
 
     fun isTextShitty(text: String) =
         SHITTY_TEXT_REGEX.containsMatchIn(text.toLowerCase())
