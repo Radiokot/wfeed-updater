@@ -11,6 +11,7 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 apply plugin: 'koin'
@@ -45,4 +46,16 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'ua.com.radiokot.feed.updater.Application'
+        )
+    }
+}
+
+shadowJar {
+    archiveFileName = 'updater.jar'
 }

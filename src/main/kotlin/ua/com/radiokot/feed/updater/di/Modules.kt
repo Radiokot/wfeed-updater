@@ -19,7 +19,7 @@ import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardServ
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.real.RealTumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1Keys
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1SigningInterceptor
-import ua.com.radiokot.feed.updater.vk.util.OAuth2MultipleTokensInterceptor
+import ua.com.radiokot.feed.updater.vk.util.OAuth2TokenInterceptor
 import ua.com.radiokot.feed.updater.vk.util.VkApiProxyPrefixInterceptor
 import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
@@ -59,12 +59,12 @@ val injectionModules: List<Module> = listOf(
                 .build()
         }
 
-        // VK with access tokens as a param
-        factory(named(InjectedHttpClient.VK_WITH_PARAMS)) { params ->
+        // VK with all the tokens
+        single(named(InjectedHttpClient.VK)) {
             OkHttpClient.Builder()
                 .addInterceptor(
-                    OAuth2MultipleTokensInterceptor(
-                        accessTokens = params[0]
+                    OAuth2TokenInterceptor(
+                        accessToken = getNotEmptyProperty("VK_ACCESS_TOKEN")
                     )
                 )
                 .apply {
@@ -81,15 +81,6 @@ val injectionModules: List<Module> = listOf(
                 }
                 .addInterceptor(get<HttpLoggingInterceptor>())
                 .build()
-        }
-
-        // VK with all the tokens
-        single(named(InjectedHttpClient.VK)) {
-            val tokens = getNotEmptyProperty("VK_ACCESS_TOKENS")
-                .split(',')
-                .map(String::trim)
-
-            get<OkHttpClient>(named(InjectedHttpClient.VK_WITH_PARAMS)) { parametersOf(tokens) }
         }
     },
 
