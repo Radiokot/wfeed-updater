@@ -75,6 +75,8 @@ class RealFeedAuthorsService(
                                     "authorId=$authorId, " +
                                     "data=$dataToUpdate"
                         )
+
+                    throw e
                 }
             }
         }

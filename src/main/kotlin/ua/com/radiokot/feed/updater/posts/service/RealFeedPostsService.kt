@@ -91,6 +91,8 @@ class RealFeedPostsService(
                         )
 
                     connection.rollback()
+
+                    throw e
                 }
             }
         }
