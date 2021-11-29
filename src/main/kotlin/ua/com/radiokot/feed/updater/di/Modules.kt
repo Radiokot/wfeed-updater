@@ -7,7 +7,6 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.apache.commons.dbcp2.BasicDataSource
 import org.koin.core.module.Module
-import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ua.com.radiokot.feed.updater.authors.service.FeedAuthorsService
@@ -19,12 +18,14 @@ import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardServ
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.real.RealTumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1Keys
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1SigningInterceptor
+import ua.com.radiokot.feed.updater.vk.VkUpdater
 import ua.com.radiokot.feed.updater.vk.util.OAuth2TokenInterceptor
 import ua.com.radiokot.feed.updater.vk.util.VkApiProxyPrefixInterceptor
 import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
 import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkWallsService
+import java.time.Duration
 import javax.sql.DataSource
 
 val injectionModules: List<Module> = listOf(
@@ -38,15 +39,20 @@ val injectionModules: List<Module> = listOf(
 
     // HTTP clients
     module {
-        factory {
-            HttpLoggingInterceptor().apply {
+        fun getLoggingInterceptor(): HttpLoggingInterceptor {
+            return HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BASIC
             }
         }
 
+        fun getDefaultBuilder(): OkHttpClient.Builder {
+            return OkHttpClient.Builder()
+                .callTimeout(Duration.ofSeconds(30))
+        }
+
         // Tumblr
         single(named(InjectedHttpClient.TUMBLR)) {
-            OkHttpClient.Builder()
+            get<OkHttpClient.Builder>()
                 .addInterceptor(OAuth1SigningInterceptor {
                     OAuth1Keys(
                         consumerKey = getNotEmptyProperty("TUMBLR_CONSUMER_KEY"),
@@ -55,13 +61,13 @@ val injectionModules: List<Module> = listOf(
                         accessSecret = getNotEmptyProperty("TUMBLR_ACCESS_SECRET")
                     )
                 })
-                .addInterceptor(get<HttpLoggingInterceptor>())
+                .addInterceptor(getLoggingInterceptor())
                 .build()
         }
 
         // VK with all the tokens
         single(named(InjectedHttpClient.VK)) {
-            OkHttpClient.Builder()
+            getDefaultBuilder()
                 .addInterceptor(
                     OAuth2TokenInterceptor(
                         accessToken = getNotEmptyProperty("VK_ACCESS_TOKEN")
@@ -79,7 +85,7 @@ val injectionModules: List<Module> = listOf(
                         )
                     }
                 }
-                .addInterceptor(get<HttpLoggingInterceptor>())
+                .addInterceptor(getLoggingInterceptor())
                 .build()
         }
     },
@@ -132,13 +138,27 @@ val injectionModules: List<Module> = listOf(
             BasicDataSource().apply {
                 url = "jdbc:mysql://$dbHost:$dbPort/$dbName" +
                         "?useSSL=false" +
-                        "&characterEncoding=utf8"
+                        "&useUnicode=yes" +
+                        "&character_set_server=utf8mb4" +
+                        "characterEncoding=UTF-8"
                 username = dbUser
                 password = dbPassword
 
                 minIdle = 3
                 maxIdle = 9
             }
+        }
+    },
+
+    // Updaters
+    module {
+        single {
+            VkUpdater(
+                vkNewsfeedService = get(),
+                feedAuthorsService = get(),
+                feedPostsService = get(),
+                vkPhotoProxyUrl = getProperty("VK_PHOTO_PROXY_URL")
+            )
         }
     },
 )

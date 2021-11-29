@@ -9,9 +9,11 @@ import ua.com.radiokot.feed.updater.authors.service.FeedAuthorsService
 import ua.com.radiokot.feed.updater.di.injectionModules
 import ua.com.radiokot.feed.updater.posts.service.FeedPostsService
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
+import ua.com.radiokot.feed.updater.util.Running
 import ua.com.radiokot.feed.updater.vk.VkUpdater
 import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
+import java.time.Duration
 
 @KoinApiExtension
 object Application : KoinComponent {
@@ -20,6 +22,7 @@ object Application : KoinComponent {
     private val vkNewsfeedService: VkNewsfeedService by inject()
     private val feedAuthorsService: FeedAuthorsService by inject()
     private val feedPostsService: FeedPostsService by inject()
+    private val vkUpdater: VkUpdater by inject()
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -64,22 +67,26 @@ object Application : KoinComponent {
 //                println(it.date.toString() + " " + it.text)
 //            }
 
-        val lastVkPostDate = feedPostsService.getLastPostDate(FeedSite.VK)
-        val minVkFeedStartTimeUnix = System.currentTimeMillis() / 1000L - 3600 * 24
-        val vkFeedStartTimeUnix =
-            if (lastVkPostDate != null)
-                (lastVkPostDate.time / 1000L).coerceAtLeast(minVkFeedStartTimeUnix)
-            else
-                minVkFeedStartTimeUnix
-        VkUpdater(
-            vkNewsfeedService,
-            feedPostsService,
-            feedAuthorsService,
-            getKoin().getProperty("VK_PHOTO_PROXY_URL")
+        Running.withBackoff(
+            runnable = {
+                val lastVkPostDate = feedPostsService.getLastPostDate(FeedSite.VK)
+                val minVkFeedStartTimeUnix = System.currentTimeMillis() / 1000L - 3600 * 24
+                val vkFeedStartTimeUnix =
+                    if (lastVkPostDate != null)
+                        (lastVkPostDate.time / 1000L).coerceAtLeast(minVkFeedStartTimeUnix)
+                    else
+                        minVkFeedStartTimeUnix
+
+                vkUpdater
+                    .update(
+                        feedAuthors = feedAuthorsService.getAuthors(FeedSite.VK),
+                        startTimeUnix = vkFeedStartTimeUnix
+                    )
+            },
+            runnableName = "VkUpdater",
+            normalInterval = Duration.ofMinutes(3),
+            minAbnormalInterval = Duration.ofMinutes(3),
+            maxAbnormalInterval = Duration.ofMinutes(15),
         )
-            .update(
-                feedAuthors = feedAuthorsService.getAuthors(FeedSite.VK),
-                startTimeUnix = vkFeedStartTimeUnix
-            )
     }
 }
