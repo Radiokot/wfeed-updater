@@ -23,8 +23,8 @@ import ua.com.radiokot.feed.updater.vk.util.OAuth2TokenInterceptor
 import ua.com.radiokot.feed.updater.vk.util.VkApiProxyPrefixInterceptor
 import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
-import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkNewsfeedService
-import ua.com.radiokot.feed.updater.vk.walls.service.real.RealVkWallsService
+import ua.com.radiokot.feed.updater.vk.walls.service.RealVkNewsfeedService
+import ua.com.radiokot.feed.updater.vk.walls.service.RealVkWallsService
 import java.time.Duration
 import javax.sql.DataSource
 
