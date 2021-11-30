@@ -1,7 +1,6 @@
 package ua.com.radiokot.feed.updater.authors.model
 
 import java.sql.ResultSet
-import java.util.*
 
 data class FeedAuthor(
     val id: Int,
@@ -9,7 +8,6 @@ data class FeedAuthor(
     val site: FeedSite,
     val name: String,
     val photoUrl: String,
-    val lastPostDate: Date,
 ) {
     constructor(authorsResultSet: ResultSet) : this(
         id = authorsResultSet.getInt("id"),
@@ -17,7 +15,6 @@ data class FeedAuthor(
         site = authorsResultSet.getInt("siteId").let { FeedSite.valueOf(it) },
         name = authorsResultSet.getString("authorName"),
         photoUrl = authorsResultSet.getString("authorPhoto"),
-        lastPostDate = Date(authorsResultSet.getLong("authorLastPostDate") * 1000)
     )
 
     override fun equals(other: Any?): Boolean {
