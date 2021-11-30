@@ -30,7 +30,7 @@ class RealFeedPostsService(
                 )
 
                 val attsInsertStatement = connection.prepareStatement(
-                    "INSERT IGNORE INTO atts(uniqId, id, type, VkAttId, photoHeight, photoWidth," +
+                    "INSERT IGNORE INTO atts (uniqId, id, type, VkAttId, photoHeight, photoWidth," +
                             " photo130, photo604, photo807, photo1280, photo2560) " +
                             "VALUES (?,?,?,?,?,?,?,?,?,?,?)"
                 )
@@ -79,6 +79,11 @@ class RealFeedPostsService(
                     newPostsCount += postsInsertStatement.use(PreparedStatement::executeBatch).sum()
                     newAttsCount += attsInsertStatement.use(PreparedStatement::executeBatch).sum()
                     connection.commit()
+
+                    logger.debug {
+                        "saved_posts_chunk: " +
+                                "chunk=${postsChunk.size}"
+                    }
                 } catch (e: Exception) {
                     logger.error {
                         "save_posts_chunk_error: " +

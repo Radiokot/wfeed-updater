@@ -11,6 +11,7 @@ import ua.com.radiokot.feed.updater.util.ShittyPostChecker
 import ua.com.radiokot.feed.updater.vk.walls.model.VkAuthor
 import ua.com.radiokot.feed.updater.vk.walls.model.VkPost
 import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
+import java.util.*
 
 /**
  * Updates feed from VK newsfeed posts,
@@ -29,17 +30,27 @@ class VkUpdater(
 
     private val logger = KotlinLogging.logger("VkUpdater")
 
+    /**
+     * @param startDate time to load the VK feed from
+     */
     fun update(
-        feedAuthors: List<FeedAuthor>,
-        startTimeUnix: Long
+        startDate: Date
     ) {
         logger.debug {
             "start: " +
-                    "startTimeUnix=$startTimeUnix, " +
+                    "startTimeUnix=$startDate"
+        }
+
+        val feedAuthors = feedAuthorsService.getAuthors(FeedSite.VK)
+
+        logger.debug {
+            "got_vk_feed_authors: " +
                     "feedAuthors=${feedAuthors.size}"
         }
 
-        val newsfeed = getNewsfeed(startTimeUnix)
+        val newsfeed = getNewsfeed(
+            startTimeUnix = startDate.time / 1000L
+        )
 
         logger.debug {
             "got_newsfeed: " +
