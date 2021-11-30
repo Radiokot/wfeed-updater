@@ -1,21 +1,21 @@
 package ua.com.radiokot.feed.updater.authors.service
 
+import mu.KotlinLogging
 import ua.com.radiokot.feed.updater.authors.model.FeedAuthor
 import ua.com.radiokot.feed.updater.authors.model.FeedAuthorDataToUpdate
 import ua.com.radiokot.feed.updater.authors.model.FeedSite
-import java.util.logging.Level
-import java.util.logging.Logger
 import javax.sql.DataSource
 
 class RealFeedAuthorsService(
     private val dataSource: DataSource
 ) : FeedAuthorsService {
+    private val logger = KotlinLogging.logger("RealFeedAuthorsService")
+
     override fun getAuthors(site: FeedSite?): List<FeedAuthor> {
-        Logger.getGlobal()
-            .log(
-                Level.INFO, "get: " +
-                        "site=$site"
-            )
+        logger.debug {
+            "get_authors: " +
+                    "site=$site"
+        }
 
         var query = "SELECT * FROM author "
         if (site != null) {
@@ -36,7 +36,13 @@ class RealFeedAuthorsService(
                         resultSet
                             .takeIf { it.next() }
                             ?.let(::FeedAuthor)
-                    }.toList()
+                    }.toList().also {
+                        logger.debug {
+                            "got_authors: " +
+                                    "site=$site, " +
+                                    "authors=${it.size}"
+                        }
+                    }
                 }
             }
         }
@@ -46,12 +52,10 @@ class RealFeedAuthorsService(
         authorId: Int,
         dataToUpdate: FeedAuthorDataToUpdate
     ) {
-        Logger.getGlobal()
-            .log(
-                Level.INFO,
-                "update: " +
-                        "authorId=$authorId"
-            )
+        logger.debug {
+            "update_data: " +
+                    "authorId=$authorId"
+        }
 
         dataSource.connection.use { connection ->
             connection.autoCommit = true
@@ -67,14 +71,19 @@ class RealFeedAuthorsService(
             preparedStatement.use { statement ->
                 try {
                     statement.executeUpdate()
+
+                    logger.debug {
+                        "data_updated: " +
+                                "authorId=$authorId, " +
+                                "data=$dataToUpdate"
+                    }
                 } catch (e: Exception) {
-                    Logger.getGlobal()
-                        .log(
-                            Level.SEVERE, "error: " +
-                                    "error=$e,\n" +
-                                    "authorId=$authorId, " +
-                                    "data=$dataToUpdate"
-                        )
+                    logger.error {
+                        "update_data_error: " +
+                                "error=$e,\n" +
+                                "authorId=$authorId, " +
+                                "data=$dataToUpdate"
+                    }
 
                     throw e
                 }

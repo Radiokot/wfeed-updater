@@ -129,7 +129,7 @@ data class FeedPostToSave(
         apiId = vkPost.id,
         text = vkPost.text,
         date = vkPost.date,
-        url = "https://vk.com/wall${vkPost.ownerId}_${vkPost.id}",
+        url = vkPost.url,
         author = author,
         attachments = vkPost.attachments.map { Attachment.fromVk(it, vkPhotoProxyUrl) }
     )

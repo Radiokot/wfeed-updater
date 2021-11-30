@@ -24,6 +24,6 @@ DB_PORT=3306 \
 DB_NAME=feed \
 DB_USER=*** \
 DB_PASSWORD=*** \
-java -Djava.util.logging.config.file=build/libs/logging.properties -jar build/libs/updater.jar
+java -Dlog4j.configuration=file:build/libs/logging.properties -jar build/libs/updater.jar
 
 ```

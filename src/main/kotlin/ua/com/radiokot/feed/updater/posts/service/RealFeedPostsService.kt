@@ -1,34 +1,30 @@
 package ua.com.radiokot.feed.updater.posts.service
 
+import mu.KotlinLogging
 import ua.com.radiokot.feed.updater.authors.model.FeedSite
 import ua.com.radiokot.feed.updater.posts.model.FeedPostToSave
 import java.sql.PreparedStatement
 import java.util.*
-import java.util.logging.Level
-import java.util.logging.Logger
 import javax.sql.DataSource
 
 class RealFeedPostsService(
     private val dataSource: DataSource
 ) : FeedPostsService {
+    private val logger = KotlinLogging.logger("RealFeedPostsService")
 
     override fun savePosts(posts: List<FeedPostToSave>) {
-        Logger.getGlobal()
-            .log(
-                Level.INFO, "save: " +
-                        "posts=${posts.size}"
-            )
+        logger.debug {
+            "save: " +
+                    "posts=${posts.size}"
+        }
 
         dataSource.connection.use { connection ->
             connection.autoCommit = false
 
-            posts.chunked(5).forEach { postsChunk ->
-                Logger.getGlobal()
-                    .log(
-                        Level.INFO, "save_chunk: " +
-                                "chunk=${postsChunk.size}"
-                    )
+            var newPostsCount = 0
+            var newAttsCount = 0
 
+            posts.chunked(5).forEach { postsChunk ->
                 val postsInsertStatement = connection.prepareStatement(
                     "INSERT IGNORE INTO post (id, apiId, authorId, text, date, url) VALUES (?,?,?,?,?,?)"
                 )
@@ -51,7 +47,7 @@ class RealFeedPostsService(
                     }
                     postsInsertStatement.addBatch()
 
-                    post.attachments.forEachIndexed{ attachmentI, attachment ->
+                    post.attachments.forEachIndexed { attachmentI, attachment ->
                         attsInsertStatement.apply {
                             var i = 0
                             setString(++i, "${post.id}_$attachmentI")
@@ -80,31 +76,38 @@ class RealFeedPostsService(
 
                 try {
                     connection.commit()
-                    postsInsertStatement.use(PreparedStatement::executeBatch)
-                    attsInsertStatement.use(PreparedStatement::executeBatch)
+                    newPostsCount += postsInsertStatement.use(PreparedStatement::executeBatch).sum()
+                    newAttsCount += attsInsertStatement.use(PreparedStatement::executeBatch).sum()
                     connection.commit()
                 } catch (e: Exception) {
-                    Logger.getGlobal()
-                        .log(
-                            Level.SEVERE, "save_posts_chunk_error: " +
-                                    "error=$e,\n" +
-                                    "chunk=$postsChunk"
-                        )
+                    logger.error {
+                        "save_posts_chunk_error: " +
+                                "error=$e,\n" +
+                                "chunk=$postsChunk,\n" +
+                                "postsInsert=$postsInsertStatement,\n" +
+                                "attsInsert=$attsInsertStatement"
+                    }
 
                     connection.rollback()
 
                     throw e
                 }
             }
+
+
+            logger.info {
+                "saved_posts: " +
+                        "newPostsCount=$newPostsCount, " +
+                        "newAttsCount=$newAttsCount"
+            }
         }
     }
 
     override fun getLastPostApiId(site: FeedSite): String? {
-        Logger.getGlobal()
-            .log(
-                Level.INFO, "get: " +
-                        "site=$site"
-            )
+        logger.debug {
+            "get_last_post_api_id: " +
+                    "site=$site"
+        }
 
         return dataSource.connection.use { connection ->
             val preparedStatement = connection.prepareStatement(
@@ -123,11 +126,11 @@ class RealFeedPostsService(
                         .takeIf { it.next() }
                         ?.getString(1)
                         .also {
-                            Logger.getGlobal()
-                                .log(
-                                    Level.INFO, "got: " +
-                                            "apiId=$it"
-                                )
+                            logger.debug {
+                                "got_last_post_api_id: " +
+                                        "site=$site, " +
+                                        "apiId=$it"
+                            }
                         }
                 }
             }
@@ -135,11 +138,10 @@ class RealFeedPostsService(
     }
 
     override fun getLastPostDate(site: FeedSite): Date? {
-        Logger.getGlobal()
-            .log(
-                Level.INFO, "get: " +
-                        "site=$site"
-            )
+        logger.debug {
+            "get_last_post_date: " +
+                    "site=$site"
+        }
 
         return dataSource.connection.use { connection ->
             val preparedStatement = connection.prepareStatement(
@@ -158,11 +160,11 @@ class RealFeedPostsService(
                         .takeIf { it.next() }
                         ?.let { Date(it.getLong(1) * 1000) }
                         .also {
-                            Logger.getGlobal()
-                                .log(
-                                    Level.INFO, "got: " +
-                                            "date=$it"
-                                )
+                            logger.debug {
+                                "got_last_post_date: " +
+                                        "site=$site, " +
+                                        "date=$it"
+                            }
                         }
                 }
             }

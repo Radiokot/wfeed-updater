@@ -1,13 +1,14 @@
 package ua.com.radiokot.feed.updater.util
 
+import mu.KotlinLogging
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.logging.Level
-import java.util.logging.Logger
 
 object Running {
+    private val logger = KotlinLogging.logger("Running")
+
     private val runExecutor: ScheduledExecutorService by lazy {
         Executors.newScheduledThreadPool(5) {
             Thread(it).apply {
@@ -22,22 +23,21 @@ object Running {
         minAbnormalInterval: Duration,
         maxAbnormalInterval: Duration,
         abnormalIntervalMultiplier: Double = 1.5,
-        runnableName: String? = null
+        runnableName: String = runnable.toString()
     ) {
         require(abnormalIntervalMultiplier > 1.0) {
             "Abnormal interval multiplier $abnormalIntervalMultiplier is lower than 1.0, " +
                     "hence the backoff is useless"
         }
 
-        Logger.getGlobal().log(
-            Level.INFO,
+        logger.info {
             "start: " +
                     "name=$runnableName, " +
                     "normalInterval=$normalInterval, " +
                     "minAbnormalInterval=$minAbnormalInterval, " +
                     "maxAbnormalInterval=$maxAbnormalInterval, " +
                     "abnormalIntervalMultiplier=$abnormalIntervalMultiplier"
-        )
+        }
 
         scheduleRunWithReschedule(
             runnable = runnable,
@@ -57,19 +57,34 @@ object Running {
         minAbnormalIntervalMillis: Long,
         maxAbnormalIntervalMillis: Long,
         abnormalIntervalMultiplier: Double,
-        name: String?
+        name: String
     ) {
+        logger.info {
+            "schedule: " +
+                    "name=$name, " +
+                    "delayMs=$delayMillis"
+        }
+
         runExecutor.schedule(
             {
                 try {
+                    logger.info {
+                        "run: " +
+                                "name=$name"
+                    }
+
                     runnable.run()
 
-                    if (delayMillis > normalIntervalMillis && name != null) {
-                        Logger.getGlobal().log(
-                            Level.INFO,
-                            "error_gone: " +
+                    logger.info {
+                        "run_successful: " +
+                                "name=$name"
+                    }
+
+                    if (delayMillis > normalIntervalMillis) {
+                        logger.info {
+                            "error_is_gone: " +
                                     "name=$name"
-                        )
+                        }
                     }
 
                     scheduleRunWithReschedule(
@@ -88,18 +103,16 @@ object Running {
                             .coerceAtLeast(minAbnormalIntervalMillis)
                             .coerceAtMost(maxAbnormalIntervalMillis)
 
-                    Logger.getGlobal().log(
-                        Level.SEVERE,
+                    logger.error(e) {
                         "${
-                            if (delayMillis == normalIntervalMillis)
+                            if (delayMillis <= normalIntervalMillis)
                                 "error_occurred"
                             else
                                 "error_occurred_again"
                         }: " +
                                 "name=$name, " +
-                                "nextDelayMillis=$nextDelayMillis",
-                        e
-                    )
+                                "nextDelayMillis=$nextDelayMillis"
+                    }
 
                     scheduleRunWithReschedule(
                         runnable = runnable,

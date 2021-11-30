@@ -3,6 +3,7 @@ package ua.com.radiokot.feed.updater.di
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.apache.commons.dbcp2.BasicDataSource
@@ -21,10 +22,10 @@ import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1SigningInterceptor
 import ua.com.radiokot.feed.updater.vk.VkUpdater
 import ua.com.radiokot.feed.updater.vk.util.OAuth2TokenInterceptor
 import ua.com.radiokot.feed.updater.vk.util.VkApiProxyPrefixInterceptor
-import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
-import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
 import ua.com.radiokot.feed.updater.vk.walls.service.RealVkNewsfeedService
 import ua.com.radiokot.feed.updater.vk.walls.service.RealVkWallsService
+import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
+import ua.com.radiokot.feed.updater.vk.walls.service.VkWallsService
 import java.time.Duration
 import javax.sql.DataSource
 
@@ -40,8 +41,13 @@ val injectionModules: List<Module> = listOf(
     // HTTP clients
     module {
         fun getLoggingInterceptor(): HttpLoggingInterceptor {
-            return HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BASIC
+            val logger = KotlinLogging.logger("HTTP")
+            return HttpLoggingInterceptor(logger::info).apply {
+                level =
+                    if (logger.isDebugEnabled)
+                        HttpLoggingInterceptor.Level.BODY
+                    else
+                        HttpLoggingInterceptor.Level.BASIC
             }
         }
 

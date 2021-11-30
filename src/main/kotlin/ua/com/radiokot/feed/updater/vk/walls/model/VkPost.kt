@@ -50,4 +50,7 @@ data class VkPost(
             }
         }
     }
+
+    val url: String
+        get() = "https://vk.com/wall${ownerId}_${id}"
 }

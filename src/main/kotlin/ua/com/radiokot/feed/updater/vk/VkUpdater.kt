@@ -1,5 +1,6 @@
 package ua.com.radiokot.feed.updater.vk
 
+import mu.KotlinLogging
 import ua.com.radiokot.feed.updater.authors.model.FeedAuthor
 import ua.com.radiokot.feed.updater.authors.model.FeedAuthorDataToUpdate
 import ua.com.radiokot.feed.updater.authors.model.FeedSite
@@ -10,8 +11,6 @@ import ua.com.radiokot.feed.updater.util.ShittyPostChecker
 import ua.com.radiokot.feed.updater.vk.walls.model.VkAuthor
 import ua.com.radiokot.feed.updater.vk.walls.model.VkPost
 import ua.com.radiokot.feed.updater.vk.walls.service.VkNewsfeedService
-import java.util.logging.Level
-import java.util.logging.Logger
 
 /**
  * Updates feed from VK newsfeed posts,
@@ -28,24 +27,24 @@ class VkUpdater(
         val authorsById: Map<String, VkAuthor>,
     )
 
+    private val logger = KotlinLogging.logger("VkUpdater")
+
     fun update(
         feedAuthors: List<FeedAuthor>,
         startTimeUnix: Long
     ) {
-        Logger.getGlobal()
-            .log(
-                Level.INFO, "start: " +
-                        "startTimeUnix=$startTimeUnix, " +
-                        "feedAuthors=${feedAuthors.size}"
-            )
+        logger.debug {
+            "start: " +
+                    "startTimeUnix=$startTimeUnix, " +
+                    "feedAuthors=${feedAuthors.size}"
+        }
 
         val newsfeed = getNewsfeed(startTimeUnix)
 
-        Logger.getGlobal()
-            .log(
-                Level.INFO, "got_newsfeed: " +
-                        "posts=${newsfeed.posts.size}"
-            )
+        logger.debug {
+            "got_newsfeed: " +
+                    "posts=${newsfeed.posts.size}"
+        }
 
         val postsByVkAuthor = newsfeed.posts
             .groupBy { post ->
@@ -65,21 +64,24 @@ class VkUpdater(
             }
             .mapValues { (_, posts) ->
                 posts
-                    .filter { post ->
-                        !post.markedAsAds
-                                && !ShittyPostChecker.isTextShitty(post.text)
-                                && post.attachments.isNotEmpty()
+                    .filterNot { post ->
+                        val isFilteredOut = post.markedAsAds
+                                || ShittyPostChecker.isTextShitty(post.text)
+                                || post.attachments.isEmpty()
+
+                        if (isFilteredOut) {
+                            logger.debug {
+                                "post_filtered_out: " +
+                                        "url=${post.url}"
+                            }
+                        }
+
+                        isFilteredOut
                     }
             }
             .filterValues { posts ->
                 posts.isNotEmpty()
             }
-
-        Logger.getGlobal()
-            .log(
-                Level.INFO, "filtered_posts: " +
-                        "foundFeedAuthors=${filteredPostsByFeedAuthor.size}"
-            )
 
         val postsToSave = filteredPostsByFeedAuthor
             .map { (feedAuthor, posts) ->
@@ -93,11 +95,10 @@ class VkUpdater(
             }
             .flatten()
 
-        Logger.getGlobal()
-            .log(
-                Level.INFO, "call_save_posts: " +
-                        "posts=${postsToSave.size}"
-            )
+        logger.info(
+            "collected_posts_to_save: " +
+                    "posts=${postsToSave.size}"
+        )
 
         feedPostsService.savePosts(postsToSave)
 
@@ -118,15 +119,14 @@ class VkUpdater(
             }
 
         if (authorsToUpdate.isNotEmpty()) {
-            Logger.getGlobal()
-                .log(
-                    Level.INFO, "call_update_authors: " +
-                            "authorsToUpdate=${authorsToUpdate.size}"
-                )
-
             authorsToUpdate.forEach { (authorId, dataToUpdate) ->
                 feedAuthorsService.updateAuthorData(authorId, dataToUpdate)
             }
+
+            logger.info(
+                "updated_authors: " +
+                        "authorsToUpdate=${authorsToUpdate.size}"
+            )
         }
     }
 
