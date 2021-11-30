@@ -104,7 +104,10 @@ class VkUpdater(
         val authorsToUpdate = postsByVkAuthor
             .keys
             .map { vkAuthor ->
-                vkAuthor.id to FeedAuthorDataToUpdate(vkAuthor)
+                vkAuthor.id to FeedAuthorDataToUpdate(
+                    vkAuthor = vkAuthor,
+                    vkPhotoProxyUrl = vkPhotoProxyUrl
+                )
             }
             .mapNotNull { (authorApiId, dataToUpdate) ->
                 val feedAuthor = feedAuthorsByApiId[authorApiId]

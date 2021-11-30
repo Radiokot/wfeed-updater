@@ -9,8 +9,15 @@ data class FeedAuthorDataToUpdate(
     val name: String,
     val photoUrl: String
 ) {
-    constructor(vkAuthor: VkAuthor) : this(
+    constructor(
+        vkAuthor: VkAuthor,
+        vkPhotoProxyUrl: String?,
+    ) : this(
         name = vkAuthor.name,
-        photoUrl = vkAuthor.photoUrl
+        photoUrl =
+        if (vkPhotoProxyUrl != null)
+            vkPhotoProxyUrl + vkAuthor.photoUrl
+        else
+            vkAuthor.photoUrl
     )
 }
