@@ -34,9 +34,9 @@ class RealFeedPostsService(
                 )
 
                 val attsInsertStatement = connection.prepareStatement(
-                    "INSERT IGNORE INTO atts(id, type, VkAttId, photoHeight, photoWidth," +
+                    "INSERT IGNORE INTO atts(uniqId, id, type, VkAttId, photoHeight, photoWidth," +
                             " photo130, photo604, photo807, photo1280, photo2560) " +
-                            "VALUES (?,?,?,?,?,?,?,?,?,?)"
+                            "VALUES (?,?,?,?,?,?,?,?,?,?,?)"
                 )
 
                 postsChunk.forEach { post ->
@@ -51,9 +51,10 @@ class RealFeedPostsService(
                     }
                     postsInsertStatement.addBatch()
 
-                    post.attachments.forEach { attachment ->
+                    post.attachments.forEachIndexed{ attachmentI, attachment ->
                         attsInsertStatement.apply {
                             var i = 0
+                            setString(++i, "${post.id}_$attachmentI")
                             setString(++i, post.id)
                             setString(++i, attachment.type)
 
