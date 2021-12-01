@@ -25,14 +25,12 @@ import okio.ByteString
 import java.io.IOException
 import java.net.URLEncoder
 import java.security.GeneralSecurityException
-import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+import kotlin.random.Random
 
 
 class OAuth1SigningInterceptor(
-    private val nonce: String = UUID.randomUUID().toString(),
-    private val timestamp: Long = System.currentTimeMillis() / 1000L,
     private val getOAuthKeys: () -> OAuth1Keys,
 ) : Interceptor {
 
@@ -46,11 +44,11 @@ class OAuth1SigningInterceptor(
         val keys = getOAuthKeys()
 
         //Setup default parameters that will be sent with authorization header
-        val parameters = hashMapOf(
+        val parameters: HashMap<String, String> = hashMapOf(
             OAUTH_CONSUMER_KEY to keys.consumerKey,
-            OAUTH_NONCE to nonce,
+            OAUTH_NONCE to Random.nextLong().toString(),
             OAUTH_SIGNATURE_METHOD to OAUTH_SIGNATURE_METHOD_VALUE,
-            OAUTH_TIMESTAMP to timestamp.toString(),
+            OAUTH_TIMESTAMP to (System.currentTimeMillis() / 1000L).toString(),
             OAUTH_VERSION to OAUTH_VERSION_VALUE
         )
         keys.accessToken?.let { parameters[OAUTH_TOKEN] = it }

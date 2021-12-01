@@ -9,6 +9,7 @@ import ua.com.radiokot.feed.updater.authors.model.FeedSite
 import ua.com.radiokot.feed.updater.di.KLoggerKoinLogger
 import ua.com.radiokot.feed.updater.di.injectionModules
 import ua.com.radiokot.feed.updater.posts.service.FeedPostsService
+import ua.com.radiokot.feed.updater.tumblr.TumblrUpdater
 import ua.com.radiokot.feed.updater.util.Running
 import ua.com.radiokot.feed.updater.vk.VkUpdater
 import java.time.Duration
@@ -18,6 +19,7 @@ import java.util.*
 object Application : KoinComponent {
     private val feedPostsService: FeedPostsService by inject()
     private val vkUpdater: VkUpdater by inject()
+    private val tumblrUpdater: TumblrUpdater by inject()
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -32,6 +34,7 @@ object Application : KoinComponent {
             modules(injectionModules)
         }
 
+        // Run VK updater.
         Running.withBackoff(
             runnable = {
                 val lastVkPostDate = feedPostsService.getLastPostDate(FeedSite.VK)
@@ -49,6 +52,20 @@ object Application : KoinComponent {
             normalInterval = Duration.ofMinutes(3),
             minAbnormalInterval = Duration.ofMinutes(3),
             maxAbnormalInterval = Duration.ofMinutes(15),
+        )
+
+        // Run Tumblr updater.
+        Running.withBackoff(
+            runnable = {
+                tumblrUpdater
+                    .update(
+                        startPostId = feedPostsService.getLastPostApiId(FeedSite.TUMBLR)
+                    )
+            },
+            runnableName = "TumblrUpdater",
+            normalInterval = Duration.ofMinutes(5),
+            minAbnormalInterval = Duration.ofMinutes(5),
+            maxAbnormalInterval = Duration.ofMinutes(20),
         )
     }
 }

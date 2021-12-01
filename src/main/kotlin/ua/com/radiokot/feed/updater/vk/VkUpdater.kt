@@ -57,13 +57,16 @@ class VkUpdater(
                     "posts=${newsfeed.posts.size}"
         }
 
+        if (newsfeed.posts.isEmpty()) {
+            return
+        }
+
         val postsByVkAuthor = newsfeed.posts
             .groupBy { post ->
                 newsfeed.authorsById.getValue(post.ownerId.trimStart('-'))
             }
 
         val feedAuthorsByApiId = feedAuthors
-            .filter { it.site == FeedSite.VK }
             .associateBy(FeedAuthor::apiId)
 
         val filteredPostsByFeedAuthor = postsByVkAuthor
@@ -106,10 +109,10 @@ class VkUpdater(
             }
             .flatten()
 
-        logger.info(
+        logger.info {
             "collected_posts_to_save: " +
                     "posts=${postsToSave.size}"
-        )
+        }
 
         feedPostsService.savePosts(postsToSave)
 
@@ -134,10 +137,10 @@ class VkUpdater(
                 feedAuthorsService.updateAuthorData(authorId, dataToUpdate)
             }
 
-            logger.info(
+            logger.info {
                 "updated_authors: " +
                         "authorsToUpdate=${authorsToUpdate.size}"
-            )
+            }
         }
     }
 

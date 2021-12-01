@@ -17,6 +17,7 @@ class RealTumblrDashboardService(
 ) : TumblrDashboardService {
     override fun getDashboardPosts(
         limit: Int?,
+        offset: Int?,
         sinceId: String?,
         type: String?
     ): List<TumblrPost> {
@@ -30,6 +31,7 @@ class RealTumblrDashboardService(
                 "https://api.tumblr.com/v2/user/dashboard".toHttpUrl().newBuilder()
                     .addNotNullQueryParameter("since_id", sinceId)
                     .addNotNullQueryParameter("limit", limit)
+                    .addNotNullQueryParameter("offset", offset)
                     .addNotNullQueryParameter("type", type)
                     .build()
             )

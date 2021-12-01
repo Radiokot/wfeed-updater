@@ -15,10 +15,12 @@ import ua.com.radiokot.feed.updater.authors.service.RealFeedAuthorsService
 import ua.com.radiokot.feed.updater.extensions.getNotEmptyProperty
 import ua.com.radiokot.feed.updater.posts.service.FeedPostsService
 import ua.com.radiokot.feed.updater.posts.service.RealFeedPostsService
+import ua.com.radiokot.feed.updater.tumblr.TumblrUpdater
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.TumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.dashboard.service.real.RealTumblrDashboardService
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1Keys
 import ua.com.radiokot.feed.updater.tumblr.util.oauth1.OAuth1SigningInterceptor
+import ua.com.radiokot.feed.updater.util.http.HttpExceptionInterceptor
 import ua.com.radiokot.feed.updater.vk.VkUpdater
 import ua.com.radiokot.feed.updater.vk.util.OAuth2TokenInterceptor
 import ua.com.radiokot.feed.updater.vk.util.VkApiProxyPrefixInterceptor
@@ -54,11 +56,12 @@ val injectionModules: List<Module> = listOf(
         fun getDefaultBuilder(): OkHttpClient.Builder {
             return OkHttpClient.Builder()
                 .callTimeout(Duration.ofSeconds(30))
+                .addInterceptor(HttpExceptionInterceptor())
         }
 
         // Tumblr
         single(named(InjectedHttpClient.TUMBLR)) {
-            get<OkHttpClient.Builder>()
+           getDefaultBuilder()
                 .addInterceptor(OAuth1SigningInterceptor {
                     OAuth1Keys(
                         consumerKey = getNotEmptyProperty("TUMBLR_CONSUMER_KEY"),
@@ -164,6 +167,14 @@ val injectionModules: List<Module> = listOf(
                 feedAuthorsService = get(),
                 feedPostsService = get(),
                 vkPhotoProxyUrl = getProperty("VK_PHOTO_PROXY_URL")
+            )
+        }
+
+        single {
+            TumblrUpdater(
+                tumblrDashboardService = get(),
+                feedAuthorsService = get(),
+                feedPostsService = get(),
             )
         }
     },
