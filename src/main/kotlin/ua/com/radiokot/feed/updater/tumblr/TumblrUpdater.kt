@@ -38,6 +38,10 @@ class TumblrUpdater(
                     "feedAuthors=${feedAuthors.size}"
         }
 
+        if (feedAuthors.isEmpty()) {
+            return
+        }
+
         val dashboardPosts = getDashboardPosts(startPostId)
 
         logger.debug {

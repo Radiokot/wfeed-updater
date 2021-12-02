@@ -48,6 +48,10 @@ class VkUpdater(
                     "feedAuthors=${feedAuthors.size}"
         }
 
+        if (feedAuthors.isEmpty()) {
+            return
+        }
+
         val newsfeed = getNewsfeed(
             startTimeUnix = startDate.time / 1000L
         )

@@ -7,6 +7,7 @@ import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.apache.commons.dbcp2.BasicDataSource
+import org.flywaydb.core.Flyway
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -155,6 +156,12 @@ val injectionModules: List<Module> = listOf(
 
                 minIdle = 3
                 maxIdle = 9
+
+                Flyway
+                    .configure()
+                    .dataSource(this)
+                    .load()
+                    .migrate()
             }
         }
     },
