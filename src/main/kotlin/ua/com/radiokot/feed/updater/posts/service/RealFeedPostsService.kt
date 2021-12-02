@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import ua.com.radiokot.feed.updater.authors.model.FeedSite
 import ua.com.radiokot.feed.updater.posts.model.FeedPostToSave
 import java.sql.PreparedStatement
+import java.sql.Statement
 import java.util.*
 import javax.sql.DataSource
 
@@ -26,13 +27,33 @@ class RealFeedPostsService(
 
             posts.chunked(5).forEach { postsChunk ->
                 val postsInsertStatement = connection.prepareStatement(
-                    "INSERT IGNORE INTO post (id, apiId, authorId, text, date, url) VALUES (?,?,?,?,?,?)"
+                    "INSERT IGNORE INTO `post`(\n" +
+                            "    `id`,\n" +
+                            "    `api_id`,\n" +
+                            "    `author_id`,\n" +
+                            "    `text`,\n" +
+                            "    `date`,\n" +
+                            "    `url`\n" +
+                            ")\n" +
+                            "VALUES(?,?,?,?,?,?)",
+                    Statement.RETURN_GENERATED_KEYS
                 )
 
                 val attsInsertStatement = connection.prepareStatement(
-                    "INSERT IGNORE INTO atts (uniqId, id, type, VkAttId, photoHeight, photoWidth," +
-                            " photo130, photo604, photo807, photo1280, photo2560) " +
-                            "VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+                    "INSERT IGNORE INTO `att`(\n" +
+                            "    `post_id`,\n" +
+                            "    `att_i`,\n" +
+                            "    `type`,\n" +
+                            "    `att_api_id`,\n" +
+                            "    `photo_height`,\n" +
+                            "    `photo_width`,\n" +
+                            "    `photo_130`,\n" +
+                            "    `photo_604`,\n" +
+                            "    `photo_807`,\n" +
+                            "    `photo_1280`,\n" +
+                            "    `photo_2560`\n" +
+                            ")\n" +
+                            "VALUES(?,?,?,?,?,?,?,?,?,?,?)"
                 )
 
                 postsChunk.forEach { post ->
@@ -42,7 +63,7 @@ class RealFeedPostsService(
                         setString(++i, post.apiId)
                         setInt(++i, post.author.id)
                         setString(++i, post.text)
-                        setLong(++i, post.timestamp)
+                        setTimestamp(++i, post.sqlTimestamp)
                         setString(++i, post.url)
                     }
                     postsInsertStatement.addBatch()
@@ -50,21 +71,21 @@ class RealFeedPostsService(
                     post.attachments.forEachIndexed { attachmentI, attachment ->
                         attsInsertStatement.apply {
                             var i = 0
-                            setString(++i, "${post.id}_$attachmentI")
                             setString(++i, post.id)
+                            setInt(++i, attachmentI)
                             setString(++i, attachment.type)
+                            setString(++i, attachment.apiId)
 
                             check(
                                 when (attachment) {
                                     is FeedPostToSave.Attachment.Photo -> {
-                                        setString(++i, attachment.vkId)
                                         setInt(++i, attachment.height)
                                         setInt(++i, attachment.width)
-                                        setString(++i, attachment.url130 ?: "0")
-                                        setString(++i, attachment.url604 ?: "0")
-                                        setString(++i, attachment.url807 ?: "0")
-                                        setString(++i, attachment.url1280 ?: "0")
-                                        setString(++i, attachment.url2560 ?: "0")
+                                        setString(++i, attachment.url130)
+                                        setString(++i, attachment.url604)
+                                        setString(++i, attachment.url807)
+                                        setString(++i, attachment.url1280)
+                                        setString(++i, attachment.url2560)
                                         true
                                     }
                                 }
@@ -116,9 +137,9 @@ class RealFeedPostsService(
 
         return dataSource.connection.use { connection ->
             val preparedStatement = connection.prepareStatement(
-                "SELECT post.apiId FROM post, author " +
-                        "WHERE post.authorId=author.id " +
-                        "AND author.siteId=? " +
+                "SELECT post.api_id FROM post, author " +
+                        "WHERE post.author_id=author.id " +
+                        "AND author.site_id=? " +
                         "ORDER BY post.date " +
                         "DESC LIMIT 1"
             ).apply {
@@ -151,8 +172,8 @@ class RealFeedPostsService(
         return dataSource.connection.use { connection ->
             val preparedStatement = connection.prepareStatement(
                 "SELECT post.date FROM post, author " +
-                        "WHERE post.authorId=author.id " +
-                        "AND author.siteId=? " +
+                        "WHERE post.author_id=author.id " +
+                        "AND author.site_id=? " +
                         "ORDER BY post.date " +
                         "DESC LIMIT 1"
             ).apply {
@@ -163,7 +184,7 @@ class RealFeedPostsService(
                 statement.executeQuery().use { resultSet ->
                     resultSet
                         .takeIf { it.next() }
-                        ?.let { Date(it.getLong(1) * 1000) }
+                        ?.let { Date(it.getTimestamp(1).time) }
                         .also {
                             logger.debug {
                                 "got_last_post_date: " +

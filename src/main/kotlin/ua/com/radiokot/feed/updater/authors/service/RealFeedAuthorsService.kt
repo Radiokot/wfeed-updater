@@ -19,7 +19,7 @@ class RealFeedAuthorsService(
 
         var query = "SELECT * FROM author "
         if (site != null) {
-            query += "WHERE siteId=? "
+            query += "WHERE site_id=? "
         }
 
         dataSource.connection.use { connection ->
@@ -61,11 +61,12 @@ class RealFeedAuthorsService(
             connection.autoCommit = true
 
             val preparedStatement = connection.prepareStatement(
-                "UPDATE author SET authorName=?, authorPhoto=? WHERE id=?"
+                "UPDATE author SET author_name=?, author_photo=? WHERE id=?"
             ).apply {
-                setString(1, dataToUpdate.name)
-                setString(2, dataToUpdate.photoUrl)
-                setInt(3, authorId)
+                var i = 0
+                setString(++i, dataToUpdate.name)
+                setString(++i, dataToUpdate.photoUrl)
+                setInt(++i, authorId)
             }
 
             preparedStatement.use { statement ->

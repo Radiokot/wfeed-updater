@@ -11,10 +11,10 @@ data class FeedAuthor(
 ) {
     constructor(authorsResultSet: ResultSet) : this(
         id = authorsResultSet.getInt("id"),
-        apiId = authorsResultSet.getString("apiId"),
-        site = authorsResultSet.getInt("siteId").let { FeedSite.valueOf(it) },
-        name = authorsResultSet.getString("authorName"),
-        photoUrl = authorsResultSet.getString("authorPhoto"),
+        apiId = authorsResultSet.getString("api_id"),
+        site = authorsResultSet.getInt("site_id").let { FeedSite.valueOf(it) },
+        name = authorsResultSet.getString("author_name"),
+        photoUrl = authorsResultSet.getString("author_photo"),
     )
 
     override fun equals(other: Any?): Boolean {

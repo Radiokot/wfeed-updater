@@ -15,10 +15,11 @@ data class FeedPostToSave(
     val attachments: List<Attachment>
 ) {
     sealed class Attachment(
-        val type: String
+        val type: String,
+        val apiId: String?,
     ) {
-        data class Photo(
-            val vkId: String?,
+        class Photo(
+            apiId: String?,
             val width: Int,
             val height: Int,
             val url130: String?,
@@ -26,7 +27,7 @@ data class FeedPostToSave(
             val url807: String?,
             val url1280: String?,
             val url2560: String?,
-        ) : Attachment(TYPE) {
+        ) : Attachment(TYPE, apiId) {
             companion object {
                 const val TYPE = "photo"
 
@@ -53,7 +54,7 @@ data class FeedPostToSave(
                             this
 
                     return Photo(
-                        vkId = vkPhoto.ownerId + "_" + vkPhoto.id,
+                        apiId = vkPhoto.ownerId + "_" + vkPhoto.id,
                         width = maxSize.width,
                         height = maxSize.height,
                         url130 = proportionalSizesMap['m']?.url
@@ -89,7 +90,7 @@ data class FeedPostToSave(
                     }
 
                     return Photo(
-                        vkId = null,
+                        apiId = null,
                         width = maxSize.width,
                         height = maxSize.height,
                         url130 = popUrlForSize(130),
@@ -116,10 +117,10 @@ data class FeedPostToSave(
     }
 
     val id: String
-        get() = "${author.id}_$timestamp"
+        get() = "${author.id}_${date.time}"
 
-    val timestamp: Long
-        get() = date.time / 1000L
+    val sqlTimestamp: java.sql.Timestamp
+        get() = java.sql.Timestamp(date.time)
 
     constructor(
         vkPost: VkPost,
