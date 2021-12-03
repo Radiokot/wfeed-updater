@@ -42,9 +42,9 @@ class RealFeedPostsService(
                 val attsInsertStatement = connection.prepareStatement(
                     "INSERT IGNORE INTO `att`(\n" +
                             "    `post_id`,\n" +
-                            "    `att_i`,\n" +
+                            "    `i`,\n" +
                             "    `type`,\n" +
-                            "    `att_api_id`,\n" +
+                            "    `api_id`,\n" +
                             "    `photo_height`,\n" +
                             "    `photo_width`,\n" +
                             "    `photo_130`,\n" +

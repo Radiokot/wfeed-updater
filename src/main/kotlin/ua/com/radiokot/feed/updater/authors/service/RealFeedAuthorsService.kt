@@ -61,7 +61,7 @@ class RealFeedAuthorsService(
             connection.autoCommit = true
 
             val preparedStatement = connection.prepareStatement(
-                "UPDATE author SET author_name=?, author_photo=? WHERE id=?"
+                "UPDATE author SET name=?, photo=? WHERE id=?"
             ).apply {
                 var i = 0
                 setString(++i, dataToUpdate.name)

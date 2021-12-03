@@ -13,8 +13,8 @@ data class FeedAuthor(
         id = authorsResultSet.getInt("id"),
         apiId = authorsResultSet.getString("api_id"),
         site = authorsResultSet.getInt("site_id").let { FeedSite.valueOf(it) },
-        name = authorsResultSet.getString("author_name"),
-        photoUrl = authorsResultSet.getString("author_photo"),
+        name = authorsResultSet.getString("name"),
+        photoUrl = authorsResultSet.getString("photo"),
     )
 
     override fun equals(other: Any?): Boolean {
