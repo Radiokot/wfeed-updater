@@ -17,6 +17,11 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      
+    - name: Set up Java version
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
     
     - name: Build JAR
       uses: gradle/gradle-build-action@v2
