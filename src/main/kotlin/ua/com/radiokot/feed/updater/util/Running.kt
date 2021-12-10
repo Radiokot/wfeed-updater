@@ -23,7 +23,7 @@ object Running {
         minAbnormalInterval: Duration,
         maxAbnormalInterval: Duration,
         abnormalIntervalMultiplier: Double = 1.5,
-        runnableName: String = runnable.toString()
+        runnableName: String? = null
     ) {
         require(abnormalIntervalMultiplier > 1.0) {
             "Abnormal interval multiplier $abnormalIntervalMultiplier is lower than 1.0, " +
@@ -32,7 +32,7 @@ object Running {
 
         logger.info {
             "start: " +
-                    "name=$runnableName, " +
+                    "runnable=$runnableName, " +
                     "normalInterval=$normalInterval, " +
                     "minAbnormalInterval=$minAbnormalInterval, " +
                     "maxAbnormalInterval=$maxAbnormalInterval, " +
@@ -40,13 +40,18 @@ object Running {
         }
 
         scheduleRunWithReschedule(
-            runnable = runnable,
+            runnable = object : Runnable {
+                override fun run() =
+                    runnable.run()
+
+                override fun toString(): String =
+                    runnableName ?: runnable.toString()
+            },
             delayMillis = 0,
             normalIntervalMillis = normalInterval.toMillis(),
             minAbnormalIntervalMillis = minAbnormalInterval.toMillis(),
             maxAbnormalIntervalMillis = maxAbnormalInterval.toMillis(),
             abnormalIntervalMultiplier = abnormalIntervalMultiplier,
-            name = runnableName
         )
     }
 
@@ -57,11 +62,10 @@ object Running {
         minAbnormalIntervalMillis: Long,
         maxAbnormalIntervalMillis: Long,
         abnormalIntervalMultiplier: Double,
-        name: String
     ) {
         logger.info {
             "schedule: " +
-                    "name=$name, " +
+                    "runnable=$runnable, " +
                     "delayMs=$delayMillis"
         }
 
@@ -70,20 +74,20 @@ object Running {
                 try {
                     logger.info {
                         "run: " +
-                                "name=$name"
+                                "runnable=$runnable"
                     }
 
                     runnable.run()
 
                     logger.info {
                         "run_successful: " +
-                                "name=$name"
+                                "runnable=$runnable"
                     }
 
                     if (delayMillis > normalIntervalMillis) {
                         logger.info {
                             "error_is_gone: " +
-                                    "name=$name"
+                                    "runnable=$runnable"
                         }
                     }
 
@@ -94,7 +98,6 @@ object Running {
                         minAbnormalIntervalMillis = minAbnormalIntervalMillis,
                         maxAbnormalIntervalMillis = maxAbnormalIntervalMillis,
                         abnormalIntervalMultiplier = abnormalIntervalMultiplier,
-                        name = name
                     )
                 } catch (e: Exception) {
                     val nextDelayMillis =
@@ -110,7 +113,7 @@ object Running {
                             else
                                 "error_occurred_again"
                         }: " +
-                                "name=$name, " +
+                                "runnable=$runnable, " +
                                 "nextDelayMillis=$nextDelayMillis"
                     }
 
@@ -121,12 +124,17 @@ object Running {
                         minAbnormalIntervalMillis = minAbnormalIntervalMillis,
                         maxAbnormalIntervalMillis = maxAbnormalIntervalMillis,
                         abnormalIntervalMultiplier = abnormalIntervalMultiplier,
-                        name = name
                     )
                 }
             },
             delayMillis,
             TimeUnit.MILLISECONDS
         )
+    }
+
+    fun shutdownNow() {
+        val skippedRunnables = runExecutor.shutdownNow()
+        logger.info("shutdown_now: " +
+                "skipped_runnables=${skippedRunnables.size}")
     }
 }

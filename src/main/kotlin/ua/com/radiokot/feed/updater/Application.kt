@@ -5,6 +5,7 @@ import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
+import sun.misc.Signal
 import ua.com.radiokot.feed.updater.authors.model.FeedSite
 import ua.com.radiokot.feed.updater.di.KLoggerKoinLogger
 import ua.com.radiokot.feed.updater.di.injectionModules
@@ -67,5 +68,10 @@ object Application : KoinComponent {
             minAbnormalInterval = Duration.ofMinutes(5),
             maxAbnormalInterval = Duration.ofMinutes(20),
         )
+
+        // Gracefully stop on SIGINT and SIGTERM.
+        listOf("INT", "TERM").forEach {
+            Signal.handle(Signal(it)) { Running.shutdownNow() }
+        }
     }
 }
