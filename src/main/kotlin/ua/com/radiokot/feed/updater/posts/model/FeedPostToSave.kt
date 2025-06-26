@@ -36,7 +36,7 @@ data class FeedPostToSave(
                     vkPhotoProxyUrl: String? = null
                 ): Photo {
                     // https://vk.com/dev/photo_sizes
-                    val proportionalSizeTypes = linkedSetOf('m', 'x', 'y', 'z', 'w')
+                    val proportionalSizeTypes = linkedSetOf("m", "x", "y", "z", "w")
 
                     val sortedProportionalSizes = vkPhoto.sizes
                         .filter { it.type in proportionalSizeTypes }
@@ -57,15 +57,15 @@ data class FeedPostToSave(
                         apiId = vkPhoto.ownerId + "_" + vkPhoto.id,
                         width = maxSize.width,
                         height = maxSize.height,
-                        url130 = proportionalSizesMap['m']?.url
+                        url130 = proportionalSizesMap["m"]?.url
                             ?.appendProxyIfNeeded(),
-                        url604 = proportionalSizesMap['x']?.url
+                        url604 = proportionalSizesMap["x"]?.url
                             ?.appendProxyIfNeeded(),
-                        url807 = proportionalSizesMap['y']?.url
+                        url807 = proportionalSizesMap["y"]?.url
                             ?.appendProxyIfNeeded(),
-                        url1280 = proportionalSizesMap['z']?.url
+                        url1280 = proportionalSizesMap["z"]?.url
                             ?.appendProxyIfNeeded(),
-                        url2560 = proportionalSizesMap['w']?.url
+                        url2560 = proportionalSizesMap["w"]?.url
                             ?.appendProxyIfNeeded(),
                     )
                 }

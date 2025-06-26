@@ -42,7 +42,7 @@ data class VkPost(
                 @JsonProperty("url")
                 val url: String,
                 @JsonProperty("type")
-                val type: Char
+                val type: String,
             )
 
             companion object {
