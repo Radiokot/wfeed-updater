@@ -1,0 +1,2 @@
+ALTER TABLE `author`
+MODIFY `photo` TEXT NOT NULL;
