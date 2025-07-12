@@ -173,7 +173,8 @@ val injectionModules: List<Module> = listOf(
                 vkNewsfeedService = get(),
                 feedAuthorsService = get(),
                 feedPostsService = get(),
-                vkPhotoProxyUrl = getProperty("VK_PHOTO_PROXY_URL")
+                vkPhotoProxyUrl = getPropertyOrNull("VK_PHOTO_PROXY_URL")
+                    ?.takeIf(String::isNotEmpty)
             )
         }
 
